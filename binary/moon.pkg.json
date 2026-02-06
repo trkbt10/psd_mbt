@@ -1,0 +1,9 @@
+{
+  "import": [
+    {
+      "path": "username/psd_fmt/types",
+      "alias": "types"
+    },
+    "moonbitlang/core/buffer"
+  ]
+}

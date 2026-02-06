@@ -1,0 +1,78 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "username/psd_fmt/image_resources"
+
+import {
+  "username/psd_fmt/binary",
+  "username/psd_fmt/types",
+}
+
+// Values
+
+// Errors
+
+// Types and methods
+pub(all) struct GridAndGuides {
+  version : Int
+  grid_horizontal : Int
+  grid_vertical : Int
+  guides : Array[GuideRecord]
+}
+pub impl Eq for GridAndGuides
+pub impl Show for GridAndGuides
+
+pub(all) struct GuideRecord {
+  position : Int
+  direction : Int
+}
+pub impl Eq for GuideRecord
+pub impl Show for GuideRecord
+
+pub(all) struct ImageResourceBlock {
+  resource_id : Int
+  name : String
+  data : Bytes
+}
+pub fn ImageResourceBlock::as_global_altitude(Self) -> Int?
+pub fn ImageResourceBlock::as_global_angle(Self) -> Int?
+pub fn ImageResourceBlock::as_grid_and_guides(Self) -> GridAndGuides?
+pub fn ImageResourceBlock::as_icc_profile(Self) -> Bytes?
+pub fn ImageResourceBlock::as_thumbnail(Self) -> ThumbnailResource?
+pub fn ImageResourceBlock::as_transparency_index(Self) -> Int?
+pub fn ImageResourceBlock::as_xmp(Self) -> String?
+pub fn ImageResourceBlock::build(Self, @binary.Writer) -> Unit
+pub fn ImageResourceBlock::from_global_altitude(Int) -> Self
+pub fn ImageResourceBlock::from_global_angle(Int) -> Self
+pub fn ImageResourceBlock::from_grid_and_guides(GridAndGuides) -> Self
+pub fn ImageResourceBlock::from_thumbnail(ThumbnailResource) -> Self
+pub fn ImageResourceBlock::from_transparency_index(Int) -> Self
+pub fn ImageResourceBlock::from_xmp(String) -> Self
+pub fn ImageResourceBlock::parse(@binary.Reader) -> Self raise @types.PsdError
+pub impl Eq for ImageResourceBlock
+pub impl Show for ImageResourceBlock
+
+pub(all) struct ImageResources {
+  blocks : Array[ImageResourceBlock]
+}
+pub fn ImageResources::build(Self, @binary.Writer) -> Unit
+pub fn ImageResources::parse(@binary.Reader) -> Self raise @types.PsdError
+pub impl Eq for ImageResources
+pub impl Show for ImageResources
+
+pub(all) struct ThumbnailResource {
+  format : Int
+  width : Int
+  height : Int
+  width_bytes : Int
+  total_size : Int
+  compressed_size : Int
+  bits_per_pixel : Int
+  num_planes : Int
+  jfif_data : Bytes
+}
+pub impl Eq for ThumbnailResource
+pub impl Show for ThumbnailResource
+
+// Type aliases
+
+// Traits
+

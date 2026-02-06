@@ -1,0 +1,33 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "username/psd_fmt"
+
+import {
+  "username/psd_fmt/color_mode_data",
+  "username/psd_fmt/header",
+  "username/psd_fmt/image_data",
+  "username/psd_fmt/image_resources",
+  "username/psd_fmt/layer_and_mask",
+  "username/psd_fmt/types",
+}
+
+// Values
+
+// Errors
+
+// Types and methods
+pub struct PsdFile {
+  header : @header.FileHeader
+  color_mode_data : @color_mode_data.ColorModeData
+  image_resources : @image_resources.ImageResources
+  layer_and_mask_info : @layer_and_mask.LayerAndMaskInfo
+  image_data : @image_data.ImageData
+}
+pub fn PsdFile::build(Self) -> Bytes
+pub fn PsdFile::parse(Bytes) -> Self raise @types.PsdError
+pub impl Eq for PsdFile
+pub impl Show for PsdFile
+
+// Type aliases
+
+// Traits
+

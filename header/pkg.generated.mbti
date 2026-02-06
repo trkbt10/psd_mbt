@@ -1,0 +1,30 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "username/psd_fmt/header"
+
+import {
+  "username/psd_fmt/binary",
+  "username/psd_fmt/types",
+}
+
+// Values
+
+// Errors
+
+// Types and methods
+pub struct FileHeader {
+  version : @types.PsdVersion
+  channels : Int
+  height : Int
+  width : Int
+  depth : Int
+  color_mode : @types.ColorMode
+}
+pub fn FileHeader::build(Self, @binary.Writer) -> Unit
+pub fn FileHeader::parse(@binary.Reader) -> Self raise @types.PsdError
+pub impl Eq for FileHeader
+pub impl Show for FileHeader
+
+// Type aliases
+
+// Traits
+

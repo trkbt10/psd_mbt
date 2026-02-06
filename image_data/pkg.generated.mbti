@@ -1,0 +1,26 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "username/psd_fmt/image_data"
+
+import {
+  "username/psd_fmt/binary",
+  "username/psd_fmt/types",
+}
+
+// Values
+
+// Errors
+
+// Types and methods
+pub(all) struct ImageData {
+  compression : @types.Compression
+  data : Bytes
+}
+pub fn ImageData::build(Self, @binary.Writer, @types.Compression, Int, Int, @types.PsdVersion, Int, Int) -> Unit
+pub fn ImageData::parse(@binary.Reader, Int, Int, @types.PsdVersion, Int, Int) -> Self raise @types.PsdError
+pub impl Eq for ImageData
+pub impl Show for ImageData
+
+// Type aliases
+
+// Traits
+

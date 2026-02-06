@@ -1,0 +1,99 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "username/psd_fmt/types"
+
+// Values
+
+// Errors
+pub(all) suberror PsdError {
+  UnexpectedEof
+  InvalidSignature(Bytes)
+  InvalidVersion(Int)
+  InvalidColorMode(Int)
+  InvalidCompression(Int)
+}
+
+// Types and methods
+pub(all) enum BlendMode {
+  PassThrough
+  Normal
+  Dissolve
+  Darken
+  Multiply
+  ColorBurn
+  LinearBurn
+  DarkerColor
+  Lighten
+  Screen
+  ColorDodge
+  LinearDodge
+  LighterColor
+  Overlay
+  SoftLight
+  HardLight
+  VividLight
+  LinearLight
+  PinLight
+  HardMix
+  Difference
+  Exclusion
+  Subtract
+  Divide
+  Hue
+  Saturation
+  Color
+  Luminosity
+  Unknown(Bytes)
+}
+pub fn BlendMode::from_bytes(Bytes) -> Self
+pub fn BlendMode::to_bytes(Self) -> Bytes
+pub impl Eq for BlendMode
+pub impl Show for BlendMode
+
+pub(all) enum ColorMode {
+  Bitmap
+  Grayscale
+  Indexed
+  RGB
+  CMYK
+  Multichannel
+  Duotone
+  Lab
+}
+pub fn ColorMode::from_int(Int) -> Self raise PsdError
+pub fn ColorMode::to_int(Self) -> Int
+pub impl Eq for ColorMode
+pub impl Show for ColorMode
+
+pub(all) enum Compression {
+  Raw
+  Rle
+  ZipNoPrediction
+  ZipPrediction
+}
+pub fn Compression::from_int(Int) -> Self raise PsdError
+pub fn Compression::to_int(Self) -> Int
+pub impl Eq for Compression
+pub impl Show for Compression
+
+pub(all) enum PsdVersion {
+  Psd
+  Psb
+}
+pub fn PsdVersion::from_int(Int) -> Self raise PsdError
+pub fn PsdVersion::to_int(Self) -> Int
+pub impl Eq for PsdVersion
+pub impl Show for PsdVersion
+
+pub(all) struct Rect {
+  top : Int
+  left : Int
+  bottom : Int
+  right : Int
+}
+pub impl Eq for Rect
+pub impl Show for Rect
+
+// Type aliases
+
+// Traits
+

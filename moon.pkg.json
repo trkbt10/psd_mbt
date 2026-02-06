@@ -1,1 +1,32 @@
-{}
+{
+  "import": [
+    {
+      "path": "username/psd_fmt/binary",
+      "alias": "binary"
+    },
+    {
+      "path": "username/psd_fmt/types",
+      "alias": "types"
+    },
+    {
+      "path": "username/psd_fmt/header",
+      "alias": "header"
+    },
+    {
+      "path": "username/psd_fmt/color_mode_data",
+      "alias": "color_mode_data"
+    },
+    {
+      "path": "username/psd_fmt/image_resources",
+      "alias": "image_resources"
+    },
+    {
+      "path": "username/psd_fmt/layer_and_mask",
+      "alias": "layer_and_mask"
+    },
+    {
+      "path": "username/psd_fmt/image_data",
+      "alias": "image_data"
+    }
+  ]
+}

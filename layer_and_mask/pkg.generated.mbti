@@ -1,0 +1,101 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "username/psd_fmt/layer_and_mask"
+
+import {
+  "username/psd_fmt/binary",
+  "username/psd_fmt/types",
+}
+
+// Values
+pub fn build_additional_layer_infos(Array[AdditionalLayerInfo], @binary.Writer, @types.PsdVersion) -> Unit
+
+pub fn parse_additional_layer_infos(@binary.Reader, Int, @types.PsdVersion) -> Array[AdditionalLayerInfo] raise @types.PsdError
+
+// Errors
+
+// Types and methods
+pub(all) struct AdditionalLayerInfo {
+  signature : Bytes
+  key : Bytes
+  data : Bytes
+}
+pub fn AdditionalLayerInfo::as_section_divider(Self) -> SectionDivider?
+pub fn AdditionalLayerInfo::as_unicode_name(Self) -> String?
+pub fn AdditionalLayerInfo::build(Self, @binary.Writer, @types.PsdVersion) -> Unit
+pub fn AdditionalLayerInfo::parse(@binary.Reader, @types.PsdVersion) -> Self raise @types.PsdError
+pub impl Eq for AdditionalLayerInfo
+pub impl Show for AdditionalLayerInfo
+
+pub(all) struct ChannelImageData {
+  compression : @types.Compression
+  data : Bytes
+}
+pub fn ChannelImageData::build(Self, @binary.Writer) -> Unit
+pub fn ChannelImageData::parse(@binary.Reader, Int) -> Self raise @types.PsdError
+pub impl Eq for ChannelImageData
+pub impl Show for ChannelImageData
+
+pub(all) struct ChannelInfo {
+  channel_id : Int
+  data_length : Int
+}
+pub impl Eq for ChannelInfo
+pub impl Show for ChannelInfo
+
+pub(all) struct GlobalLayerMaskInfo {
+  data : Bytes
+}
+pub fn GlobalLayerMaskInfo::build(Self, @binary.Writer) -> Unit
+pub fn GlobalLayerMaskInfo::parse(@binary.Reader) -> Self raise @types.PsdError
+pub impl Eq for GlobalLayerMaskInfo
+pub impl Show for GlobalLayerMaskInfo
+
+pub(all) struct LayerAndMaskInfo {
+  layer_info : LayerInfo?
+  global_mask : GlobalLayerMaskInfo?
+  additional_info : Array[AdditionalLayerInfo]
+}
+pub fn LayerAndMaskInfo::build(Self, @binary.Writer, @types.PsdVersion) -> Unit
+pub fn LayerAndMaskInfo::parse(@binary.Reader, @types.PsdVersion) -> Self raise @types.PsdError
+pub impl Eq for LayerAndMaskInfo
+pub impl Show for LayerAndMaskInfo
+
+pub(all) struct LayerInfo {
+  layer_count : Int
+  layers : Array[LayerRecord]
+  channel_data : Array[Array[ChannelImageData]]
+}
+pub fn LayerInfo::build(Self, @binary.Writer, @types.PsdVersion) -> Unit
+pub fn LayerInfo::parse(@binary.Reader, @types.PsdVersion) -> Self raise @types.PsdError
+pub impl Eq for LayerInfo
+pub impl Show for LayerInfo
+
+pub(all) struct LayerRecord {
+  rect : @types.Rect
+  channels : Array[ChannelInfo]
+  blend_mode : @types.BlendMode
+  opacity : Int
+  clipping : Int
+  flags : Int
+  mask_data : Bytes
+  blending_ranges : Bytes
+  name : String
+  additional_info : Array[AdditionalLayerInfo]
+}
+pub fn LayerRecord::build(Self, @binary.Writer, @types.PsdVersion) -> Unit
+pub fn LayerRecord::parse(@binary.Reader, @types.PsdVersion) -> Self raise @types.PsdError
+pub impl Eq for LayerRecord
+pub impl Show for LayerRecord
+
+pub(all) struct SectionDivider {
+  divider_type : Int
+  blend_mode : @types.BlendMode?
+  sub_type : Int?
+}
+pub impl Eq for SectionDivider
+pub impl Show for SectionDivider
+
+// Type aliases
+
+// Traits
+

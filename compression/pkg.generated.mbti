@@ -1,0 +1,20 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "username/psd_fmt/compression"
+
+import {
+  "username/psd_fmt/types",
+}
+
+// Values
+pub fn packbits_decode(Bytes, Int) -> Bytes raise @types.PsdError
+
+pub fn packbits_encode(Bytes) -> Bytes
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits
+

@@ -1,0 +1,52 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "username/psd_fmt/binary"
+
+import {
+  "moonbitlang/core/buffer",
+  "username/psd_fmt/types",
+}
+
+// Values
+
+// Errors
+
+// Types and methods
+pub struct Reader {
+  data : Bytes
+  mut offset : Int
+}
+pub fn Reader::new(Bytes) -> Self
+pub fn Reader::position(Self) -> Int
+pub fn Reader::read_bytes(Self, Int) -> Bytes raise @types.PsdError
+pub fn Reader::read_i16_be(Self) -> Int raise @types.PsdError
+pub fn Reader::read_i32_be(Self) -> Int raise @types.PsdError
+pub fn Reader::read_length(Self, @types.PsdVersion) -> Int raise @types.PsdError
+pub fn Reader::read_rle_count(Self, @types.PsdVersion) -> Int raise @types.PsdError
+pub fn Reader::read_u16_be(Self) -> UInt raise @types.PsdError
+pub fn Reader::read_u32_be(Self) -> UInt raise @types.PsdError
+pub fn Reader::read_u64_be(Self) -> UInt64 raise @types.PsdError
+pub fn Reader::read_u8(Self) -> Byte raise @types.PsdError
+pub fn Reader::remaining(Self) -> Int
+pub fn Reader::skip(Self, Int) -> Unit raise @types.PsdError
+
+pub struct Writer {
+  buf : @buffer.Buffer
+}
+pub fn Writer::length(Self) -> Int
+pub fn Writer::new() -> Self
+pub fn Writer::to_bytes(Self) -> Bytes
+pub fn Writer::write_bytes(Self, Bytes) -> Unit
+pub fn Writer::write_i16_be(Self, Int) -> Unit
+pub fn Writer::write_i32_be(Self, Int) -> Unit
+pub fn Writer::write_length(Self, Int, @types.PsdVersion) -> Unit
+pub fn Writer::write_rle_count(Self, Int, @types.PsdVersion) -> Unit
+pub fn Writer::write_u16_be(Self, UInt) -> Unit
+pub fn Writer::write_u32_be(Self, UInt) -> Unit
+pub fn Writer::write_u64_be(Self, UInt64) -> Unit
+pub fn Writer::write_u8(Self, Byte) -> Unit
+pub fn Writer::write_zeros(Self, Int) -> Unit
+
+// Type aliases
+
+// Traits
+

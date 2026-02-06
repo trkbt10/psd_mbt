@@ -1,0 +1,25 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "username/psd_fmt/color_mode_data"
+
+import {
+  "username/psd_fmt/binary",
+  "username/psd_fmt/types",
+}
+
+// Values
+
+// Errors
+
+// Types and methods
+pub struct ColorModeData {
+  data : Bytes
+}
+pub fn ColorModeData::build(Self, @binary.Writer) -> Unit
+pub fn ColorModeData::parse(@binary.Reader) -> Self raise @types.PsdError
+pub impl Eq for ColorModeData
+pub impl Show for ColorModeData
+
+// Type aliases
+
+// Traits
+
