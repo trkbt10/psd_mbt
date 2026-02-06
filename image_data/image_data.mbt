@@ -31,11 +31,11 @@ pub fn ImageData::parse(
         byte_counts.push(reader.read_rle_count(version))
       }
       // Read and decode each scanline
-      let bytes_per_line = width * (depth / 8)
-      let buf = @buffer.new(size_hint=total_lines * bytes_per_line)
+      let bpl = @types.bytes_per_line(width, depth)
+      let buf = @buffer.new(size_hint=total_lines * bpl)
       for line = 0; line < total_lines; line = line + 1 {
         let compressed = reader.read_bytes(byte_counts[line])
-        let decoded = @compression.packbits_decode(compressed, bytes_per_line)
+        let decoded = @compression.packbits_decode(compressed, bpl)
         buf.write_bytes(decoded)
       }
       { compression: Raw, data: buf.to_bytes() }
@@ -47,7 +47,7 @@ pub fn ImageData::parse(
       } else {
         b""
       }
-      let total_bytes = channels * height * width * (depth / 8)
+      let total_bytes = channels * height * @types.bytes_per_line(width, depth)
       let data = @compression.zlib_decompress(compressed, total_bytes)
       { compression: Raw, data }
     }
@@ -58,10 +58,10 @@ pub fn ImageData::parse(
       } else {
         b""
       }
-      let total_bytes = channels * height * width * (depth / 8)
+      let total_bytes = channels * height * @types.bytes_per_line(width, depth)
       let decompressed = @compression.zlib_decompress(compressed, total_bytes)
       // Remove prediction filter per channel
-      let bytes_per_channel = height * width * (depth / 8)
+      let bytes_per_channel = height * @types.bytes_per_line(width, depth)
       let buf = @buffer.new(size_hint=total_bytes)
       for ch = 0; ch < channels; ch = ch + 1 {
         let offset = ch * bytes_per_channel
@@ -99,7 +99,7 @@ pub fn ImageData::build(
   match compression {
     Raw => if self.data.length() > 0 { writer.write_bytes(self.data) }
     Rle => {
-      let bytes_per_line = width * (depth / 8)
+      let bytes_per_line = @types.bytes_per_line(width, depth)
       let total_lines = channels * height
       // Encode each scanline
       let encoded_lines : Array[Bytes] = []
@@ -126,7 +126,7 @@ pub fn ImageData::build(
     }
     ZipPrediction => {
       // Apply prediction filter per channel, then compress
-      let bytes_per_channel = height * width * (depth / 8)
+      let bytes_per_channel = height * @types.bytes_per_line(width, depth)
       let filtered_buf = @buffer.new(size_hint=self.data.length())
       for ch = 0; ch < channels; ch = ch + 1 {
         let offset = ch * bytes_per_channel

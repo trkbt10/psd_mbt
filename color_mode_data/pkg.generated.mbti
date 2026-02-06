@@ -17,7 +17,7 @@ pub struct ColorModeData {
 pub fn ColorModeData::as_indexed_table(Self) -> Array[(Int, Int, Int)]?
 pub fn ColorModeData::build(Self, @binary.Writer) -> Unit
 pub fn ColorModeData::from_indexed_table(Array[(Int, Int, Int)]) -> Self
-pub fn ColorModeData::parse(@binary.Reader) -> Self raise @types.PsdError
+pub fn ColorModeData::parse(@binary.Reader, @types.ColorMode) -> Self raise @types.PsdError
 pub impl Eq for ColorModeData
 pub impl Show for ColorModeData
 

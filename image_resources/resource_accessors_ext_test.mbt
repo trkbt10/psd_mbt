@@ -230,3 +230,55 @@ test "URLList round-trip" {
     None => panic()
   }
 }
+
+///|
+test "OriginID round-trip" {
+  let block = ImageResourceBlock::from_origin_id(42)
+  inspect(block.resource_id, content="1044")
+  inspect(block.as_origin_id(), content="Some(42)")
+}
+
+///|
+test "UnicodeAlphaNames round-trip" {
+  let names = ["Alpha 1", "Mask"]
+  let block = ImageResourceBlock::from_unicode_alpha_names(names)
+  inspect(block.resource_id, content="1045")
+  match block.as_unicode_alpha_names() {
+    Some(parsed) => {
+      inspect(parsed.length(), content="2")
+      inspect(parsed[0], content="Alpha 1")
+      inspect(parsed[1], content="Mask")
+    }
+    None => panic()
+  }
+}
+
+///|
+test "IndexedColorTableCount round-trip" {
+  let block = ImageResourceBlock::from_indexed_color_table_count(256)
+  inspect(block.resource_id, content="1046")
+  inspect(block.as_indexed_color_table_count(), content="Some(256)")
+}
+
+///|
+test "AlphaIdentifiers round-trip" {
+  let ids = [100, 200, 300]
+  let block = ImageResourceBlock::from_alpha_identifiers(ids)
+  inspect(block.resource_id, content="1051")
+  match block.as_alpha_identifiers() {
+    Some(parsed) => {
+      inspect(parsed.length(), content="3")
+      inspect(parsed[0], content="100")
+      inspect(parsed[1], content="200")
+      inspect(parsed[2], content="300")
+    }
+    None => panic()
+  }
+}
+
+///|
+test "DocumentSpecificIDs round-trip" {
+  let block = ImageResourceBlock::from_document_specific_ids(1000)
+  inspect(block.resource_id, content="1081")
+  inspect(block.as_document_specific_ids(), content="Some(1000)")
+}

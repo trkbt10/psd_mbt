@@ -22,11 +22,29 @@ pub fn FileHeader::parse(
   let version_int = reader.read_u16_be().reinterpret_as_int()
   let version = @types.PsdVersion::from_int(version_int)
   // Reserved 6 bytes - must be zero
-  reader.skip(6)
+  let reserved = reader.read_bytes(6)
+  for i = 0; i < 6; i = i + 1 {
+    if reserved[i] != b'\x00' {
+      raise @types.InvalidReserved
+    }
+  }
   let channels = reader.read_u16_be().reinterpret_as_int()
+  if channels < 1 || channels > 56 {
+    raise @types.ChannelsOutOfRange(channels)
+  }
   let height = reader.read_u32_be().reinterpret_as_int()
   let width = reader.read_u32_be().reinterpret_as_int()
+  let max_dim = match version {
+    Psd => 30000
+    Psb => 300000
+  }
+  if width < 1 || width > max_dim || height < 1 || height > max_dim {
+    raise @types.DimensionsOutOfRange(width, height)
+  }
   let depth = reader.read_u16_be().reinterpret_as_int()
+  if depth != 1 && depth != 8 && depth != 16 && depth != 32 {
+    raise @types.InvalidDepth(depth)
+  }
   let color_mode_int = reader.read_u16_be().reinterpret_as_int()
   let color_mode = @types.ColorMode::from_int(color_mode_int)
   { version, channels, height, width, depth, color_mode }

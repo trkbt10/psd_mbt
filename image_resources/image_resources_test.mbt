@@ -136,6 +136,36 @@ test "ImageResourceBlock thumbnail round-trip" {
 }
 
 ///|
+test "ThumbnailResource format accessors" {
+  let jpeg_thumb : ThumbnailResource = {
+    format: 1,
+    width: 10,
+    height: 10,
+    width_bytes: 30,
+    total_size: 300,
+    compressed_size: 0,
+    bits_per_pixel: 24,
+    num_planes: 1,
+    jfif_data: b"",
+  }
+  inspect(jpeg_thumb.is_jpeg(), content="true")
+  inspect(jpeg_thumb.is_raw_rgb(), content="false")
+  let raw_thumb : ThumbnailResource = {
+    format: 0,
+    width: 10,
+    height: 10,
+    width_bytes: 30,
+    total_size: 300,
+    compressed_size: 0,
+    bits_per_pixel: 24,
+    num_planes: 1,
+    jfif_data: b"",
+  }
+  inspect(raw_thumb.is_jpeg(), content="false")
+  inspect(raw_thumb.is_raw_rgb(), content="true")
+}
+
+///|
 test "ImageResourceBlock grid_and_guides round-trip" {
   let gg : GridAndGuides = {
     version: 1,

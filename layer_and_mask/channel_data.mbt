@@ -38,7 +38,7 @@ pub fn ChannelImageData::decompress(
   version : @types.PsdVersion,
   depth : Int,
 ) -> Bytes raise @types.PsdError {
-  let bytes_per_line = width * (depth / 8)
+  let bytes_per_line = @types.bytes_per_line(width, depth)
   match self.compression {
     Raw => self.data
     Rle => {
@@ -58,11 +58,11 @@ pub fn ChannelImageData::decompress(
       buf.to_bytes()
     }
     ZipNoPrediction => {
-      let total_bytes = height * width * (depth / 8)
+      let total_bytes = height * @types.bytes_per_line(width, depth)
       @compression.zlib_decompress(self.data, total_bytes)
     }
     ZipPrediction => {
-      let total_bytes = height * width * (depth / 8)
+      let total_bytes = height * @types.bytes_per_line(width, depth)
       let decompressed = @compression.zlib_decompress(self.data, total_bytes)
       @compression.remove_prediction_filter(decompressed, width, height, depth)
     }
@@ -79,7 +79,7 @@ pub fn ChannelImageData::compress(
   depth : Int,
   compression : @types.Compression,
 ) -> ChannelImageData {
-  let bytes_per_line = width * (depth / 8)
+  let bytes_per_line = @types.bytes_per_line(width, depth)
   match compression {
     Raw => { compression, data: raw_data }
     Rle => {

@@ -419,3 +419,141 @@ pub fn ImageResourceBlock::from_url_list(
   }
   { resource_id: 1054, name: "", data: w.to_bytes() }
 }
+
+///|
+/// OriginID (ID 1044) - UInt32, base value for layer IDs.
+pub fn ImageResourceBlock::as_origin_id(self : ImageResourceBlock) -> Int? {
+  if self.resource_id != 1044 || self.data.length() < 4 {
+    return None
+  }
+  let reader = @binary.Reader::new(self.data)
+  Some(reader.read_u32_be().reinterpret_as_int()) catch {
+    _ => None
+  }
+}
+
+///|
+pub fn ImageResourceBlock::from_origin_id(id : Int) -> ImageResourceBlock {
+  let w = @binary.Writer::new()
+  w.write_u32_be(id.reinterpret_as_uint())
+  { resource_id: 1044, name: "", data: w.to_bytes() }
+}
+
+///|
+/// UnicodeAlphaNames (ID 1045) - Array of Unicode strings.
+/// Each string: 4-byte length + UTF-16BE characters.
+pub fn ImageResourceBlock::as_unicode_alpha_names(
+  self : ImageResourceBlock,
+) -> Array[String]? {
+  if self.resource_id != 1045 {
+    return None
+  }
+  let reader = @binary.Reader::new(self.data)
+  let names : Array[String] = []
+  try {
+    while reader.remaining() >= 4 {
+      let len = reader.read_u32_be().reinterpret_as_int()
+      let buf = @buffer.new(size_hint=len)
+      for _j = 0; _j < len; _j = _j + 1 {
+        let code = reader.read_u16_be().reinterpret_as_int()
+        buf.write_char(code.unsafe_to_char())
+      }
+      names.push(buf.to_string())
+    }
+  } catch {
+    _ => ()
+  }
+  Some(names)
+}
+
+///|
+pub fn ImageResourceBlock::from_unicode_alpha_names(
+  names : Array[String],
+) -> ImageResourceBlock {
+  let w = @binary.Writer::new()
+  for i = 0; i < names.length(); i = i + 1 {
+    let s = names[i]
+    w.write_u32_be(s.length().reinterpret_as_uint())
+    for j = 0; j < s.length(); j = j + 1 {
+      w.write_u16_be(s[j].to_int().reinterpret_as_uint())
+    }
+  }
+  { resource_id: 1045, name: "", data: w.to_bytes() }
+}
+
+///|
+/// IndexedColorTableCount (ID 1046) - UInt16.
+pub fn ImageResourceBlock::as_indexed_color_table_count(
+  self : ImageResourceBlock,
+) -> Int? {
+  if self.resource_id != 1046 || self.data.length() < 2 {
+    return None
+  }
+  let reader = @binary.Reader::new(self.data)
+  Some(reader.read_u16_be().reinterpret_as_int()) catch {
+    _ => None
+  }
+}
+
+///|
+pub fn ImageResourceBlock::from_indexed_color_table_count(
+  count : Int,
+) -> ImageResourceBlock {
+  let w = @binary.Writer::new()
+  w.write_u16_be(count.reinterpret_as_uint())
+  { resource_id: 1046, name: "", data: w.to_bytes() }
+}
+
+///|
+/// AlphaIdentifiers (ID 1051) - Array of UInt32.
+pub fn ImageResourceBlock::as_alpha_identifiers(
+  self : ImageResourceBlock,
+) -> Array[Int]? {
+  if self.resource_id != 1051 {
+    return None
+  }
+  let reader = @binary.Reader::new(self.data)
+  let ids : Array[Int] = []
+  try {
+    while reader.remaining() >= 4 {
+      ids.push(reader.read_u32_be().reinterpret_as_int())
+    }
+  } catch {
+    _ => ()
+  }
+  Some(ids)
+}
+
+///|
+pub fn ImageResourceBlock::from_alpha_identifiers(
+  ids : Array[Int],
+) -> ImageResourceBlock {
+  let w = @binary.Writer::new()
+  for i = 0; i < ids.length(); i = i + 1 {
+    w.write_u32_be(ids[i].reinterpret_as_uint())
+  }
+  { resource_id: 1051, name: "", data: w.to_bytes() }
+}
+
+///|
+/// DocumentSpecificIDs (ID 1081) - UInt32, base value for generating layer IDs.
+pub fn ImageResourceBlock::as_document_specific_ids(
+  self : ImageResourceBlock,
+) -> Int? {
+  if self.resource_id != 1081 || self.data.length() < 4 {
+    return None
+  }
+  let reader = @binary.Reader::new(self.data)
+  Some(reader.read_u32_be().reinterpret_as_int()) catch {
+    _ => None
+  }
+}
+
+///|
+pub fn ImageResourceBlock::from_document_specific_ids(
+  id : Int,
+) -> ImageResourceBlock {
+  let w = @binary.Writer::new()
+  w.write_u32_be(id.reinterpret_as_uint())
+  { resource_id: 1081, name: "", data: w.to_bytes() }
+}

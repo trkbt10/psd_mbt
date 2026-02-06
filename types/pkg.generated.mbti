@@ -2,6 +2,7 @@
 package "username/psd_fmt/types"
 
 // Values
+pub fn bytes_per_line(Int, Int) -> Int
 
 // Errors
 pub(all) suberror PsdError {
@@ -10,6 +11,11 @@ pub(all) suberror PsdError {
   InvalidVersion(Int)
   InvalidColorMode(Int)
   InvalidCompression(Int)
+  InvalidReserved
+  ChannelsOutOfRange(Int)
+  InvalidDepth(Int)
+  DimensionsOutOfRange(Int, Int)
+  InvalidColorModeDataLength(Int, Int)
 }
 
 // Types and methods

@@ -33,6 +33,23 @@ pub fn LayerInfo::parse(
 }
 
 ///|
+/// If layer_count is negative, the first alpha channel contains
+/// the transparency data for the merged result.
+pub fn LayerInfo::has_merged_transparency(self : LayerInfo) -> Bool {
+  self.layer_count < 0
+}
+
+///|
+/// Actual number of layers (absolute value of layer_count).
+pub fn LayerInfo::actual_layer_count(self : LayerInfo) -> Int {
+  if self.layer_count < 0 {
+    -self.layer_count
+  } else {
+    self.layer_count
+  }
+}
+
+///|
 pub fn LayerInfo::build(
   self : LayerInfo,
   writer : @binary.Writer,

@@ -32,6 +32,66 @@ test "FileHeader invalid signature" {
 }
 
 ///|
+test "FileHeader invalid reserved bytes" {
+  // Reserved byte at position 8 is non-zero
+  let bad = b"\x38\x42\x50\x53\x00\x01\x00\x00\x00\x00\x00\x01\x00\x03\x00\x00\x00\x01\x00\x00\x00\x01\x00\x08\x00\x03"
+  let reader = @binary.Reader::new(bad)
+  let result : Result[String, String] = try {
+    let _ = FileHeader::parse(reader)
+    Ok("ok")
+  } catch {
+    @types.InvalidReserved => Err("InvalidReserved")
+    _ => Err("other")
+  }
+  inspect(result, content="Err(\"InvalidReserved\")")
+}
+
+///|
+test "FileHeader channels out of range" {
+  // channels = 0 (too low)
+  let bad = b"\x38\x42\x50\x53\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x01\x00\x08\x00\x03"
+  let reader = @binary.Reader::new(bad)
+  let result : Result[String, String] = try {
+    let _ = FileHeader::parse(reader)
+    Ok("ok")
+  } catch {
+    @types.ChannelsOutOfRange(_) => Err("ChannelsOutOfRange")
+    _ => Err("other")
+  }
+  inspect(result, content="Err(\"ChannelsOutOfRange\")")
+}
+
+///|
+test "FileHeader invalid depth" {
+  // depth = 4 (not in {1, 8, 16, 32})
+  let bad = b"\x38\x42\x50\x53\x00\x01\x00\x00\x00\x00\x00\x00\x00\x03\x00\x00\x00\x01\x00\x00\x00\x01\x00\x04\x00\x03"
+  let reader = @binary.Reader::new(bad)
+  let result : Result[String, String] = try {
+    let _ = FileHeader::parse(reader)
+    Ok("ok")
+  } catch {
+    @types.InvalidDepth(_) => Err("InvalidDepth")
+    _ => Err("other")
+  }
+  inspect(result, content="Err(\"InvalidDepth\")")
+}
+
+///|
+test "FileHeader dimensions out of range" {
+  // width = 0 (too low)
+  let bad = b"\x38\x42\x50\x53\x00\x01\x00\x00\x00\x00\x00\x00\x00\x03\x00\x00\x00\x01\x00\x00\x00\x00\x00\x08\x00\x03"
+  let reader = @binary.Reader::new(bad)
+  let result : Result[String, String] = try {
+    let _ = FileHeader::parse(reader)
+    Ok("ok")
+  } catch {
+    @types.DimensionsOutOfRange(_, _) => Err("DimensionsOutOfRange")
+    _ => Err("other")
+  }
+  inspect(result, content="Err(\"DimensionsOutOfRange\")")
+}
+
+///|
 test "FileHeader PSB version" {
   // PSB header: version=2
   let psb_header = b"\x38\x42\x50\x53\x00\x02\x00\x00\x00\x00\x00\x00\x00\x03\x00\x00\x00\x01\x00\x00\x00\x01\x00\x08\x00\x03"

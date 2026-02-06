@@ -44,8 +44,8 @@ pub fn apply_prediction_filter(
   height : Int,
   depth : Int,
 ) -> Bytes {
-  let stride = depth / 8
-  let bytes_per_row = width * stride
+  let stride = if depth < 8 { 1 } else { depth / 8 }
+  let bytes_per_row = @types.bytes_per_line(width, depth)
   let buf = @buffer.new(size_hint=data.length())
   for row = 0; row < height; row = row + 1 {
     let row_offset = row * bytes_per_row
@@ -72,8 +72,8 @@ pub fn remove_prediction_filter(
   height : Int,
   depth : Int,
 ) -> Bytes {
-  let stride = depth / 8
-  let bytes_per_row = width * stride
+  let stride = if depth < 8 { 1 } else { depth / 8 }
+  let bytes_per_row = @types.bytes_per_line(width, depth)
   let result : Array[Byte] = Array::make(data.length(), b'\x00')
   for row = 0; row < height; row = row + 1 {
     let row_offset = row * bytes_per_row

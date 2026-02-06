@@ -51,6 +51,18 @@ pub fn ImageResourceBlock::as_thumbnail(
 }
 
 ///|
+/// Format 1 = kJpegRGB (JFIF data).
+pub fn ThumbnailResource::is_jpeg(self : ThumbnailResource) -> Bool {
+  self.format == 1
+}
+
+///|
+/// Format 0 = kRawRGB (raw RGB pixel data).
+pub fn ThumbnailResource::is_raw_rgb(self : ThumbnailResource) -> Bool {
+  self.format == 0
+}
+
+///|
 /// Create a thumbnail resource block from a ThumbnailResource.
 pub fn ImageResourceBlock::from_thumbnail(
   thumb : ThumbnailResource,

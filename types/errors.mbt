@@ -5,4 +5,9 @@ pub(all) suberror PsdError {
   InvalidVersion(Int)
   InvalidColorMode(Int)
   InvalidCompression(Int)
+  InvalidReserved
+  ChannelsOutOfRange(Int)
+  InvalidDepth(Int)
+  DimensionsOutOfRange(Int, Int)
+  InvalidColorModeDataLength(Int, Int)
 }

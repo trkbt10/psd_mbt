@@ -215,3 +215,68 @@ test "BlendMode from_bytes/to_bytes round-trip" {
   inspect(@types.BlendMode::Normal.to_bytes() == b"norm", content="true")
   inspect(@types.BlendMode::Multiply.to_bytes() == b"mul ", content="true")
 }
+
+///|
+test "LayerRecord flag accessors" {
+  let record : LayerRecord = {
+    rect: { top: 0, left: 0, bottom: 4, right: 4 },
+    channels: [],
+    blend_mode: @types.BlendMode::Normal,
+    opacity: 255,
+    clipping: 0,
+    flags: 0b00001011, // bits 0, 1, 3 set
+    mask_data: b"",
+    blending_ranges: b"",
+    name: "test",
+    additional_info: [],
+  }
+  inspect(record.is_transparency_protected(), content="true")
+  inspect(record.is_visible(), content="true")
+  inspect(record.has_useful_info(), content="true")
+  inspect(record.is_pixel_irrelevant(), content="false")
+}
+
+///|
+test "LayerRecord flag accessors bit 4" {
+  let record : LayerRecord = {
+    rect: { top: 0, left: 0, bottom: 1, right: 1 },
+    channels: [],
+    blend_mode: @types.BlendMode::Normal,
+    opacity: 255,
+    clipping: 0,
+    flags: 0b00010000, // bit 4 only
+    mask_data: b"",
+    blending_ranges: b"",
+    name: "",
+    additional_info: [],
+  }
+  inspect(record.is_transparency_protected(), content="false")
+  inspect(record.is_visible(), content="false")
+  inspect(record.has_useful_info(), content="false")
+  inspect(record.is_pixel_irrelevant(), content="true")
+}
+
+///|
+test "ChannelInfo id accessors" {
+  let transparency : ChannelInfo = { channel_id: -1, data_length: 10 }
+  let user_mask : ChannelInfo = { channel_id: -2, data_length: 10 }
+  let real_mask : ChannelInfo = { channel_id: -3, data_length: 10 }
+  let red : ChannelInfo = { channel_id: 0, data_length: 10 }
+  inspect(transparency.is_transparency(), content="true")
+  inspect(transparency.is_user_mask(), content="false")
+  inspect(user_mask.is_user_mask(), content="true")
+  inspect(real_mask.is_real_mask(), content="true")
+  inspect(red.is_transparency(), content="false")
+  inspect(red.is_user_mask(), content="false")
+  inspect(red.is_real_mask(), content="false")
+}
+
+///|
+test "LayerInfo merged transparency and actual count" {
+  let positive : LayerInfo = { layer_count: 3, layers: [], channel_data: [] }
+  inspect(positive.has_merged_transparency(), content="false")
+  inspect(positive.actual_layer_count(), content="3")
+  let negative : LayerInfo = { layer_count: -2, layers: [], channel_data: [] }
+  inspect(negative.has_merged_transparency(), content="true")
+  inspect(negative.actual_layer_count(), content="2")
+}

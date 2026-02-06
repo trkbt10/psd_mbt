@@ -187,6 +187,24 @@ fn write_pascal_string_4byte(writer : @binary.Writer, s : String) -> Unit {
 }
 
 ///|
+/// Channel ID -1 = transparency mask.
+pub fn ChannelInfo::is_transparency(self : ChannelInfo) -> Bool {
+  self.channel_id == -1
+}
+
+///|
+/// Channel ID -2 = user supplied layer mask.
+pub fn ChannelInfo::is_user_mask(self : ChannelInfo) -> Bool {
+  self.channel_id == -2
+}
+
+///|
+/// Channel ID -3 = real user supplied layer mask (when both vector and user mask present).
+pub fn ChannelInfo::is_real_mask(self : ChannelInfo) -> Bool {
+  self.channel_id == -3
+}
+
+///|
 fn bytes_to_ascii(data : Bytes) -> String {
   let buf = @buffer.new(size_hint=data.length())
   for i = 0; i < data.length(); i = i + 1 {

@@ -6,9 +6,18 @@ pub struct ColorModeData {
 ///|
 pub fn ColorModeData::parse(
   reader : @binary.Reader,
+  color_mode : @types.ColorMode,
 ) -> ColorModeData raise @types.PsdError {
   let length = reader.read_u32_be().reinterpret_as_int()
   let data = if length > 0 { reader.read_bytes(length) } else { b"" }
+  match color_mode {
+    Indexed =>
+      if length != 768 {
+        raise @types.InvalidColorModeDataLength(768, length)
+      }
+    Duotone => if length == 0 { raise @types.InvalidColorModeDataLength(1, 0) }
+    _ => ()
+  }
   { data, }
 }
 

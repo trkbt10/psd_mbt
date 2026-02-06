@@ -84,6 +84,9 @@ pub(all) struct ChannelInfo {
   channel_id : Int
   data_length : Int
 }
+pub fn ChannelInfo::is_real_mask(Self) -> Bool
+pub fn ChannelInfo::is_transparency(Self) -> Bool
+pub fn ChannelInfo::is_user_mask(Self) -> Bool
 pub impl Eq for ChannelInfo
 pub impl Show for ChannelInfo
 
@@ -138,7 +141,9 @@ pub(all) struct LayerInfo {
   layers : Array[LayerRecord]
   channel_data : Array[Array[ChannelImageData]]
 }
+pub fn LayerInfo::actual_layer_count(Self) -> Int
 pub fn LayerInfo::build(Self, @binary.Writer, @types.PsdVersion) -> Unit
+pub fn LayerInfo::has_merged_transparency(Self) -> Bool
 pub fn LayerInfo::parse(@binary.Reader, @types.PsdVersion) -> Self raise @types.PsdError
 pub impl Eq for LayerInfo
 pub impl Show for LayerInfo

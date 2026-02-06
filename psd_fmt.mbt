@@ -11,7 +11,10 @@ pub struct PsdFile {
 pub fn PsdFile::parse(data : Bytes) -> PsdFile raise @types.PsdError {
   let reader = @binary.Reader::new(data)
   let header = @header.FileHeader::parse(reader)
-  let color_mode_data = @color_mode_data.ColorModeData::parse(reader)
+  let color_mode_data = @color_mode_data.ColorModeData::parse(
+    reader,
+    header.color_mode,
+  )
   let image_resources = @image_resources.ImageResources::parse(reader)
   let layer_and_mask_info = @layer_and_mask.LayerAndMaskInfo::parse(
     reader,
