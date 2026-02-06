@@ -41,6 +41,52 @@ test "ImageData parse RLE 1x1" {
 }
 
 ///|
+test "ImageData ZIP no prediction round-trip" {
+  // 2x2 RGB 8-bit, 12 bytes raw
+  let raw_data = b"\xFF\xFF\xFF\xFF\x00\x00\x00\x00\x80\x80\x80\x80"
+  let img : ImageData = { compression: @types.Compression::Raw, data: raw_data }
+  let writer = @binary.Writer::new()
+  img.build(
+    writer,
+    @types.Compression::ZipNoPrediction,
+    3,
+    2,
+    @types.PsdVersion::Psd,
+    8,
+    2,
+  )
+  let zip_bytes = writer.to_bytes()
+  // Parse back
+  let reader = @binary.Reader::new(zip_bytes)
+  let parsed = ImageData::parse(reader, 3, 2, @types.PsdVersion::Psd, 8, 2)
+  inspect(parsed.compression, content="Raw")
+  inspect(parsed.data == raw_data, content="true")
+}
+
+///|
+test "ImageData ZIP with prediction round-trip" {
+  // 2x2 RGB 8-bit, 12 bytes raw
+  let raw_data = b"\xFF\xFF\xFF\xFF\x00\x00\x00\x00\x80\x80\x80\x80"
+  let img : ImageData = { compression: @types.Compression::Raw, data: raw_data }
+  let writer = @binary.Writer::new()
+  img.build(
+    writer,
+    @types.Compression::ZipPrediction,
+    3,
+    2,
+    @types.PsdVersion::Psd,
+    8,
+    2,
+  )
+  let zip_bytes = writer.to_bytes()
+  // Parse back
+  let reader = @binary.Reader::new(zip_bytes)
+  let parsed = ImageData::parse(reader, 3, 2, @types.PsdVersion::Psd, 8, 2)
+  inspect(parsed.compression, content="Raw")
+  inspect(parsed.data == raw_data, content="true")
+}
+
+///|
 test "ImageData RLE round-trip" {
   // Create raw pixel data for 2x2 RGB 8-bit
   // R channel: FF FF FF FF, G channel: 00 00 00 00, B channel: 80 80 80 80

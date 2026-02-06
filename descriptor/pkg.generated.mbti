@@ -1,0 +1,68 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "username/psd_fmt/descriptor"
+
+import {
+  "username/psd_fmt/binary",
+  "username/psd_fmt/types",
+}
+
+// Values
+
+// Errors
+
+// Types and methods
+pub(all) struct Descriptor {
+  class_id_name : String
+  class_id : String
+  items : Array[DescriptorItem]
+}
+pub fn Descriptor::build(Self, @binary.Writer) -> Unit
+pub fn Descriptor::from_bytes(Bytes) -> Self raise @types.PsdError
+pub fn Descriptor::parse(@binary.Reader) -> Self raise @types.PsdError
+pub fn Descriptor::to_bytes(Self) -> Bytes
+pub impl Eq for Descriptor
+pub impl Show for Descriptor
+
+pub(all) struct DescriptorItem {
+  key : String
+  value : DescriptorValue
+}
+pub impl Eq for DescriptorItem
+pub impl Show for DescriptorItem
+
+pub(all) enum DescriptorValue {
+  Boolean(Bool)
+  Integer(Int)
+  LargeInteger(Int64)
+  Double(Double)
+  String(String)
+  Enumerated(String, String)
+  UnitFloat(Int, Double)
+  Descriptor(Descriptor)
+  List(Array[DescriptorValue])
+  Reference(Array[ReferenceItem])
+  Class(String, String)
+  Alias(Bytes)
+  RawData(Bytes)
+  ObjectArray(Descriptor)
+  GlobalObject(Descriptor)
+}
+pub impl Eq for DescriptorValue
+pub impl Show for DescriptorValue
+
+pub(all) enum ReferenceItem {
+  Property(String, String, String)
+  Class(String, String)
+  EnumeratedRef(String, String, String, String)
+  Offset(String, String, Int)
+  Identifier(String, String, Int)
+  Index(String, String, Int)
+  Name(String, String, String)
+}
+pub impl Eq for ReferenceItem
+pub impl Show for ReferenceItem
+
+// Type aliases
+
+// Traits
+

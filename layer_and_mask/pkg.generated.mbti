@@ -3,11 +3,14 @@ package "username/psd_fmt/layer_and_mask"
 
 import {
   "username/psd_fmt/binary",
+  "username/psd_fmt/descriptor",
   "username/psd_fmt/types",
 }
 
 // Values
 pub fn build_additional_layer_infos(Array[AdditionalLayerInfo], @binary.Writer, @types.PsdVersion) -> Unit
+
+pub fn is_adjustment_key(Bytes) -> Bool
 
 pub fn parse_additional_layer_infos(@binary.Reader, Int, @types.PsdVersion) -> Array[AdditionalLayerInfo] raise @types.PsdError
 
@@ -19,9 +22,49 @@ pub(all) struct AdditionalLayerInfo {
   key : Bytes
   data : Bytes
 }
+pub fn AdditionalLayerInfo::as_adjustment_descriptor(Self) -> (Int, @descriptor.Descriptor)?
+pub fn AdditionalLayerInfo::as_blend_clipping(Self) -> Bool?
+pub fn AdditionalLayerInfo::as_fill_opacity(Self) -> Int?
+pub fn AdditionalLayerInfo::as_filter_mask(Self) -> FilterMask?
+pub fn AdditionalLayerInfo::as_interior_blend(Self) -> Bool?
+pub fn AdditionalLayerInfo::as_knockout(Self) -> Bool?
+pub fn AdditionalLayerInfo::as_layer_id(Self) -> Int?
+pub fn AdditionalLayerInfo::as_layer_name_source(Self) -> Bytes?
+pub fn AdditionalLayerInfo::as_layer_version(Self) -> Int?
+pub fn AdditionalLayerInfo::as_legacy_effects(Self) -> LegacyEffects?
+pub fn AdditionalLayerInfo::as_metadata_setting(Self) -> Array[MetadataItem]?
+pub fn AdditionalLayerInfo::as_object_effects(Self) -> (Int, @descriptor.Descriptor)?
+pub fn AdditionalLayerInfo::as_placed_layer(Self) -> (Int, @descriptor.Descriptor)?
+pub fn AdditionalLayerInfo::as_protection_settings(Self) -> Int?
+pub fn AdditionalLayerInfo::as_reference_point(Self) -> (Double, Double)?
 pub fn AdditionalLayerInfo::as_section_divider(Self) -> SectionDivider?
+pub fn AdditionalLayerInfo::as_sheet_color(Self) -> Array[Int]?
+pub fn AdditionalLayerInfo::as_transparency_shapes_layer(Self) -> Bool?
+pub fn AdditionalLayerInfo::as_type_tool(Self) -> TypeToolInfo?
 pub fn AdditionalLayerInfo::as_unicode_name(Self) -> String?
+pub fn AdditionalLayerInfo::as_vector_mask(Self) -> VectorMask?
+pub fn AdditionalLayerInfo::as_vector_origination(Self) -> (Int, @descriptor.Descriptor)?
 pub fn AdditionalLayerInfo::build(Self, @binary.Writer, @types.PsdVersion) -> Unit
+pub fn AdditionalLayerInfo::from_adjustment_descriptor(Bytes, Int, @descriptor.Descriptor) -> Self
+pub fn AdditionalLayerInfo::from_blend_clipping(Bool) -> Self
+pub fn AdditionalLayerInfo::from_fill_opacity(Int) -> Self
+pub fn AdditionalLayerInfo::from_filter_mask(FilterMask) -> Self
+pub fn AdditionalLayerInfo::from_interior_blend(Bool) -> Self
+pub fn AdditionalLayerInfo::from_knockout(Bool) -> Self
+pub fn AdditionalLayerInfo::from_layer_id(Int) -> Self
+pub fn AdditionalLayerInfo::from_layer_name_source(Bytes) -> Self
+pub fn AdditionalLayerInfo::from_layer_version(Int) -> Self
+pub fn AdditionalLayerInfo::from_legacy_effects(LegacyEffects) -> Self
+pub fn AdditionalLayerInfo::from_metadata_setting(Array[MetadataItem]) -> Self
+pub fn AdditionalLayerInfo::from_object_effects(Int, @descriptor.Descriptor) -> Self
+pub fn AdditionalLayerInfo::from_placed_layer(Bytes, Int, @descriptor.Descriptor) -> Self
+pub fn AdditionalLayerInfo::from_protection_settings(Int) -> Self
+pub fn AdditionalLayerInfo::from_reference_point(Double, Double) -> Self
+pub fn AdditionalLayerInfo::from_sheet_color(Array[Int]) -> Self
+pub fn AdditionalLayerInfo::from_transparency_shapes_layer(Bool) -> Self
+pub fn AdditionalLayerInfo::from_type_tool(TypeToolInfo) -> Self
+pub fn AdditionalLayerInfo::from_vector_mask(Bytes, VectorMask) -> Self
+pub fn AdditionalLayerInfo::from_vector_origination(Int, @descriptor.Descriptor) -> Self
 pub fn AdditionalLayerInfo::parse(@binary.Reader, @types.PsdVersion) -> Self raise @types.PsdError
 pub impl Eq for AdditionalLayerInfo
 pub impl Show for AdditionalLayerInfo
@@ -31,6 +74,8 @@ pub(all) struct ChannelImageData {
   data : Bytes
 }
 pub fn ChannelImageData::build(Self, @binary.Writer) -> Unit
+pub fn ChannelImageData::compress(Bytes, Int, Int, @types.PsdVersion, Int, @types.Compression) -> Self
+pub fn ChannelImageData::decompress(Self, Int, Int, @types.PsdVersion, Int) -> Bytes raise @types.PsdError
 pub fn ChannelImageData::parse(@binary.Reader, Int) -> Self raise @types.PsdError
 pub impl Eq for ChannelImageData
 pub impl Show for ChannelImageData
@@ -42,13 +87,32 @@ pub(all) struct ChannelInfo {
 pub impl Eq for ChannelInfo
 pub impl Show for ChannelInfo
 
+pub(all) struct FilterMask {
+  color_space : Int
+  color_components : Array[Int]
+  opacity : Int
+}
+pub impl Eq for FilterMask
+pub impl Show for FilterMask
+
 pub(all) struct GlobalLayerMaskInfo {
   data : Bytes
 }
+pub fn GlobalLayerMaskInfo::as_fields(Self) -> GlobalMaskFields?
 pub fn GlobalLayerMaskInfo::build(Self, @binary.Writer) -> Unit
+pub fn GlobalLayerMaskInfo::from_fields(GlobalMaskFields) -> Self
 pub fn GlobalLayerMaskInfo::parse(@binary.Reader) -> Self raise @types.PsdError
 pub impl Eq for GlobalLayerMaskInfo
 pub impl Show for GlobalLayerMaskInfo
+
+pub(all) struct GlobalMaskFields {
+  overlay_color_space : Int
+  color_components : Array[Int]
+  opacity : Int
+  kind : Int
+}
+pub impl Eq for GlobalMaskFields
+pub impl Show for GlobalMaskFields
 
 pub(all) struct LayerAndMaskInfo {
   layer_info : LayerInfo?
@@ -60,6 +124,15 @@ pub fn LayerAndMaskInfo::parse(@binary.Reader, @types.PsdVersion) -> Self raise 
 pub impl Eq for LayerAndMaskInfo
 pub impl Show for LayerAndMaskInfo
 
+pub(all) struct LayerBlendingRanges {
+  composite_gray : Bytes
+  channels : Array[Bytes]
+}
+pub fn LayerBlendingRanges::build(Self) -> Bytes
+pub fn LayerBlendingRanges::parse(Bytes) -> Self?
+pub impl Eq for LayerBlendingRanges
+pub impl Show for LayerBlendingRanges
+
 pub(all) struct LayerInfo {
   layer_count : Int
   layers : Array[LayerRecord]
@@ -69,6 +142,24 @@ pub fn LayerInfo::build(Self, @binary.Writer, @types.PsdVersion) -> Unit
 pub fn LayerInfo::parse(@binary.Reader, @types.PsdVersion) -> Self raise @types.PsdError
 pub impl Eq for LayerInfo
 pub impl Show for LayerInfo
+
+pub(all) struct LayerMaskData {
+  rect : @types.Rect
+  default_color : Int
+  flags : Int
+  real_flags : Int?
+  real_background : Int?
+  real_rect : @types.Rect?
+}
+pub fn LayerMaskData::build(Self) -> Bytes
+pub fn LayerMaskData::has_parameters(Self) -> Bool
+pub fn LayerMaskData::is_disabled(Self) -> Bool
+pub fn LayerMaskData::is_from_render(Self) -> Bool
+pub fn LayerMaskData::is_invert_on_blend(Self) -> Bool
+pub fn LayerMaskData::is_position_relative(Self) -> Bool
+pub fn LayerMaskData::parse(Bytes) -> Self?
+pub impl Eq for LayerMaskData
+pub impl Show for LayerMaskData
 
 pub(all) struct LayerRecord {
   rect : @types.Rect
@@ -82,10 +173,41 @@ pub(all) struct LayerRecord {
   name : String
   additional_info : Array[AdditionalLayerInfo]
 }
+pub fn LayerRecord::as_blending_ranges(Self) -> LayerBlendingRanges?
+pub fn LayerRecord::as_mask_data(Self) -> LayerMaskData?
 pub fn LayerRecord::build(Self, @binary.Writer, @types.PsdVersion) -> Unit
+pub fn LayerRecord::has_useful_info(Self) -> Bool
+pub fn LayerRecord::is_obsolete(Self) -> Bool
+pub fn LayerRecord::is_pixel_irrelevant(Self) -> Bool
+pub fn LayerRecord::is_transparency_protected(Self) -> Bool
+pub fn LayerRecord::is_visible(Self) -> Bool
 pub fn LayerRecord::parse(@binary.Reader, @types.PsdVersion) -> Self raise @types.PsdError
 pub impl Eq for LayerRecord
 pub impl Show for LayerRecord
+
+pub(all) struct LegacyEffect {
+  signature : Bytes
+  effect_type : Bytes
+  data : Bytes
+}
+pub impl Eq for LegacyEffect
+pub impl Show for LegacyEffect
+
+pub(all) struct LegacyEffects {
+  version : Int
+  effects : Array[LegacyEffect]
+}
+pub impl Eq for LegacyEffects
+pub impl Show for LegacyEffects
+
+pub(all) struct MetadataItem {
+  signature : Bytes
+  key : Bytes
+  copy_on_sheet : Bool
+  data : Bytes
+}
+pub impl Eq for MetadataItem
+pub impl Show for MetadataItem
 
 pub(all) struct SectionDivider {
   divider_type : Int
@@ -94,6 +216,24 @@ pub(all) struct SectionDivider {
 }
 pub impl Eq for SectionDivider
 pub impl Show for SectionDivider
+
+pub(all) struct TypeToolInfo {
+  version : Int
+  transform : Array[Double]
+  text_version : Int
+  descriptor_version : Int
+  text_data : @descriptor.Descriptor
+}
+pub impl Eq for TypeToolInfo
+pub impl Show for TypeToolInfo
+
+pub(all) struct VectorMask {
+  version : Int
+  flags : Int
+  path_records : Bytes
+}
+pub impl Eq for VectorMask
+pub impl Show for VectorMask
 
 // Type aliases
 

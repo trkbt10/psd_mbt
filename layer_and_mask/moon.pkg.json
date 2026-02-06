@@ -8,6 +8,14 @@
       "path": "username/psd_fmt/types",
       "alias": "types"
     },
+    {
+      "path": "username/psd_fmt/compression",
+      "alias": "compression"
+    },
+    {
+      "path": "username/psd_fmt/descriptor",
+      "alias": "descriptor"
+    },
     "moonbitlang/core/buffer"
   ]
 }

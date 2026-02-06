@@ -6,9 +6,17 @@ import {
 }
 
 // Values
+pub fn apply_prediction_filter(Bytes, Int, Int, Int) -> Bytes
+
 pub fn packbits_decode(Bytes, Int) -> Bytes raise @types.PsdError
 
 pub fn packbits_encode(Bytes) -> Bytes
+
+pub fn remove_prediction_filter(Bytes, Int, Int, Int) -> Bytes
+
+pub fn zlib_compress(Bytes) -> Bytes
+
+pub fn zlib_decompress(Bytes, Int) -> Bytes raise @types.PsdError
 
 // Errors
 

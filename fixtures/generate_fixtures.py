@@ -603,6 +603,361 @@ def generate_phase6_layer_group():
     print(f"Generated {output} ({len(buf)} bytes)")
 
 
+def build_layer_record_with_ali_and_mask(
+    top, left, bottom, right, ch_ids, blend_mode, opacity, flags, name,
+    channel_data_lengths, ali_data=b"", mask_data=b"", blending_ranges=b""
+):
+    """Build a layer record with mask data, blending ranges, and ALI data."""
+    lr = bytearray()
+    lr += struct.pack(">i", top)
+    lr += struct.pack(">i", left)
+    lr += struct.pack(">i", bottom)
+    lr += struct.pack(">i", right)
+    lr += struct.pack(">H", len(ch_ids))
+    for ch_id, dl in zip(ch_ids, channel_data_lengths):
+        lr += struct.pack(">h", ch_id)
+        lr += struct.pack(">I", dl)
+    lr += b"8BIM"
+    lr += blend_mode
+    lr += struct.pack("B", opacity)
+    lr += struct.pack("B", 0)  # clipping
+    lr += struct.pack("B", flags)
+    lr += b"\x00"  # filler
+
+    extra = bytearray()
+    # Layer Mask Data
+    extra += struct.pack(">I", len(mask_data))
+    extra += mask_data
+    # Blending Ranges
+    extra += struct.pack(">I", len(blending_ranges))
+    extra += blending_ranges
+    # Layer name (Pascal string padded to 4 bytes)
+    name_bytes = name.encode("ascii")
+    extra += struct.pack("B", len(name_bytes))
+    extra += name_bytes
+    pad = (4 - ((1 + len(name_bytes)) % 4)) % 4
+    extra += b"\x00" * pad
+    # ALI data
+    extra += ali_data
+
+    lr += struct.pack(">I", len(extra))
+    lr += extra
+    return bytes(lr)
+
+
+def generate_phase8_structural():
+    """Generate 4x4 RGB with 1 layer that has mask data, blending ranges, and global mask info."""
+    width, height, channels = 4, 4, 3
+    pixel_bytes = width * height  # 16
+
+    buf = bytearray()
+    buf += make_header(channels=channels, height=height, width=width)
+    buf += struct.pack(">I", 0)  # Color Mode Data
+    buf += struct.pack(">I", 0)  # Image Resources
+
+    lm_buf = bytearray()
+    li_buf = bytearray()
+    li_buf += struct.pack(">h", 1)  # Layer count = 1
+
+    # Layer Mask Data (20 bytes): rect(16) + defaultColor(1) + flags(1) + padding(2)
+    mask_data = bytearray()
+    mask_data += struct.pack(">i", 0)   # top
+    mask_data += struct.pack(">i", 0)   # left
+    mask_data += struct.pack(">i", 4)   # bottom
+    mask_data += struct.pack(">i", 4)   # right
+    mask_data += struct.pack("B", 255)  # default color
+    mask_data += struct.pack("B", 0x00) # flags
+    mask_data += b"\x00\x00"            # padding
+
+    # Blending Ranges: composite gray (8 bytes) + 3 channels (8 bytes each) = 32 bytes
+    blending_ranges = bytearray()
+    # Composite gray: src_black_low, src_black_high, src_white_low, src_white_high,
+    #                 dst_black_low, dst_black_high, dst_white_low, dst_white_high
+    blending_ranges += struct.pack("BBBBBBBB", 0, 0, 255, 255, 0, 0, 255, 255)
+    for _ in range(channels):
+        blending_ranges += struct.pack("BBBBBBBB", 0, 0, 255, 255, 0, 0, 255, 255)
+
+    # Channel data: R, G, B + alpha (-1) for mask
+    ch_ids = [-1, 0, 1, 2]
+    ch_data = []
+    for ch_id in ch_ids:
+        if ch_id == -1:
+            # Mask channel (4x4 = 16 bytes, all white)
+            raw = b"\xFF" * pixel_bytes
+        elif ch_id == 0:
+            raw = b"\xFF" * pixel_bytes  # R = 255
+        else:
+            raw = b"\x00" * pixel_bytes  # G=0, B=0
+        ch_buf = struct.pack(">H", 0) + raw  # compression = Raw + data
+        ch_data.append(ch_buf)
+
+    lr = build_layer_record_with_ali_and_mask(
+        0, 0, height, width, ch_ids, b"norm", 255, 0x0A, "Layer 0",
+        [len(d) for d in ch_data],
+        mask_data=bytes(mask_data),
+        blending_ranges=bytes(blending_ranges),
+    )
+    li_buf += lr
+
+    # Channel Image Data
+    for d in ch_data:
+        li_buf += d
+
+    # Layer Info length (rounded to even)
+    li_length = len(li_buf)
+    if li_length % 2 != 0:
+        li_buf += b"\x00"
+        li_length += 1
+
+    lm_buf += struct.pack(">I", li_length)
+    lm_buf += li_buf
+
+    # Global Layer Mask Info (13 bytes minimum)
+    gm_buf = bytearray()
+    gm_buf += struct.pack(">H", 0)        # overlay color space
+    gm_buf += struct.pack(">HHHH", 0, 0, 0, 0)  # color components
+    gm_buf += struct.pack(">H", 100)      # opacity
+    gm_buf += struct.pack("B", 128)       # kind (use stored value)
+    # Pad to even
+    if len(gm_buf) % 2 != 0:
+        gm_buf += b"\x00"
+    lm_buf += struct.pack(">I", len(gm_buf))
+    lm_buf += gm_buf
+
+    buf += struct.pack(">I", len(lm_buf))
+    buf += lm_buf
+
+    # Merged Image Data: Raw, red pixel
+    buf += struct.pack(">H", 0)  # Compression = Raw
+    buf += b"\xFF" * pixel_bytes  # R
+    buf += b"\x00" * pixel_bytes  # G
+    buf += b"\x00" * pixel_bytes  # B
+
+    output = FIXTURES_DIR / "phase8_structural.psd"
+    output.write_bytes(bytes(buf))
+    print(f"Generated {output} ({len(buf)} bytes)")
+
+
+def generate_phase10_resources():
+    """Generate 1x1 RGB with multiple typed resource blocks."""
+    buf = bytearray()
+    buf += make_header()
+    buf += struct.pack(">I", 0)  # Color Mode Data
+
+    res_buf = bytearray()
+
+    # ResolutionInfo (ID 1005, 16 bytes)
+    res_buf += b"8BIM"
+    res_buf += struct.pack(">H", 1005)
+    res_buf += b"\x00\x00"
+    res_data = bytearray()
+    res_data += struct.pack(">I", 0x00480000)  # hRes = 72.0
+    res_data += struct.pack(">H", 1)           # hResUnit
+    res_data += struct.pack(">H", 1)           # widthUnit
+    res_data += struct.pack(">I", 0x00480000)  # vRes = 72.0
+    res_data += struct.pack(">H", 1)           # vResUnit
+    res_data += struct.pack(">H", 1)           # heightUnit
+    res_buf += struct.pack(">I", len(res_data))
+    res_buf += res_data
+
+    # PrintFlagsInfo (ID 10000, 10 bytes)
+    res_buf += b"8BIM"
+    res_buf += struct.pack(">H", 10000)
+    res_buf += b"\x00\x00"
+    pfi = bytearray()
+    pfi += struct.pack(">H", 0)   # version
+    pfi += struct.pack("B", 1)    # centerCrop
+    pfi += b"\x00"                # padding
+    pfi += struct.pack(">I", 100) # bleedWidth
+    pfi += struct.pack(">H", 1)   # bleedScale
+    res_buf += struct.pack(">I", len(pfi))
+    res_buf += pfi
+
+    # VersionInfo (ID 1057)
+    res_buf += b"8BIM"
+    res_buf += struct.pack(">H", 1057)
+    res_buf += b"\x00\x00"
+    vi = bytearray()
+    vi += struct.pack(">I", 1)    # version
+    vi += struct.pack("B", 1)     # hasRealMergedData
+    # writer name as Unicode string
+    writer_name = "Adobe Photoshop"
+    encoded = writer_name.encode("utf-16-be")
+    vi += struct.pack(">I", len(encoded) // 2)
+    vi += encoded
+    # reader name as Unicode string
+    reader_name = ""
+    vi += struct.pack(">I", 0)
+    vi += struct.pack(">I", 1)    # fileVersion
+    vi += struct.pack(">I", 2)    # _reserved (readerVersion)
+    res_buf += struct.pack(">I", len(vi))
+    res_buf += vi
+    if len(vi) % 2 != 0:
+        res_buf += b"\x00"
+
+    # PixelAspectRatio (ID 1064)
+    res_buf += b"8BIM"
+    res_buf += struct.pack(">H", 1064)
+    res_buf += b"\x00\x00"
+    par = bytearray()
+    par += struct.pack(">I", 1)          # version
+    par += struct.pack(">d", 1.0)        # aspect ratio (double)
+    res_buf += struct.pack(">I", len(par))
+    res_buf += par
+
+    buf += struct.pack(">I", len(res_buf))
+    buf += res_buf
+    buf += struct.pack(">I", 0)  # Layer and Mask
+    buf += struct.pack(">H", 0)  # Compression = Raw
+    buf += b"\x00" * 3
+
+    output = FIXTURES_DIR / "phase10_resources.psd"
+    output.write_bytes(bytes(buf))
+    print(f"Generated {output} ({len(buf)} bytes)")
+
+
+def generate_phase13_path():
+    """Generate 4x4 RGB with a saved path resource (ID 2000)."""
+    buf = bytearray()
+    buf += make_header(channels=3, height=4, width=4)
+    buf += struct.pack(">I", 0)  # Color Mode Data
+
+    res_buf = bytearray()
+
+    # Path resource (ID 2000): a simple closed rectangular path
+    res_buf += b"8BIM"
+    res_buf += struct.pack(">H", 2000)
+    # Name: "Path 1" as Pascal string
+    path_name = b"Path 1"
+    res_buf += struct.pack("B", len(path_name))
+    res_buf += path_name
+    # Pad to even
+    if (1 + len(path_name)) % 2 != 0:
+        res_buf += b"\x00"
+
+    # Path records (26 bytes each)
+    path_data = bytearray()
+
+    # Record 0: Closed subpath length = 4 (4 knots for a rectangle)
+    path_data += struct.pack(">H", 0)     # type = 0 (ClosedSubpathLength)
+    path_data += struct.pack(">H", 4)     # knot count
+    path_data += b"\x00" * 22             # padding to 26 bytes
+
+    # Fixed-point 8.24: value * 2^24 = value * 16777216
+    def fp824(v):
+        """Convert float to 8.24 fixed-point as signed 32-bit."""
+        return int(v * 16777216) & 0xFFFFFFFF
+
+    # Record 1-4: Four corner knots (linked)
+    corners = [(0.0, 0.0), (0.0, 1.0), (1.0, 1.0), (1.0, 0.0)]
+    for y, x in corners:
+        path_data += struct.pack(">H", 1)  # type = 1 (ClosedSubpathBezierKnotLinked)
+        # control_preceding (y, x), anchor (y, x), control_leaving (y, x)
+        # For straight lines, control points = anchor point
+        path_data += struct.pack(">II", fp824(y), fp824(x))  # control preceding
+        path_data += struct.pack(">II", fp824(y), fp824(x))  # anchor
+        path_data += struct.pack(">II", fp824(y), fp824(x))  # control leaving
+
+    # Record 5: Initial fill rule = 1
+    path_data += struct.pack(">H", 8)     # type = 8 (InitialFill)
+    path_data += struct.pack(">H", 1)     # fill = 1
+    path_data += b"\x00" * 22             # padding to 26 bytes
+
+    res_buf += struct.pack(">I", len(path_data))
+    res_buf += path_data
+
+    # Clipping path name (ID 2999)
+    res_buf += b"8BIM"
+    res_buf += struct.pack(">H", 2999)
+    res_buf += b"\x00\x00"  # empty Pascal string name
+    clip_data = struct.pack(">I", 0)  # index to path resource (0 = first)
+    res_buf += struct.pack(">I", len(clip_data))
+    res_buf += clip_data
+
+    buf += struct.pack(">I", len(res_buf))
+    buf += res_buf
+    buf += struct.pack(">I", 0)  # Layer and Mask
+    buf += struct.pack(">H", 0)  # Compression = Raw
+    buf += b"\x00" * (3 * 4 * 4)  # 4x4 RGB = 48 bytes
+
+    output = FIXTURES_DIR / "phase13_path.psd"
+    output.write_bytes(bytes(buf))
+    print(f"Generated {output} ({len(buf)} bytes)")
+
+
+def generate_phase15_effects():
+    """Generate 4x4 RGB with 1 layer containing legacy effects (lrFX) and filter mask (FMsk)."""
+    width, height, channels = 4, 4, 3
+    pixel_bytes = width * height  # 16
+
+    buf = bytearray()
+    buf += make_header(channels=channels, height=height, width=width)
+    buf += struct.pack(">I", 0)  # Color Mode Data
+    buf += struct.pack(">I", 0)  # Image Resources
+
+    lm_buf = bytearray()
+    li_buf = bytearray()
+    li_buf += struct.pack(">h", 1)  # Layer count = 1
+
+    # Build ALI blocks
+    ali = bytearray()
+
+    # lrFX (legacy effects): version(2) + count(2) + effects
+    lrfx_data = bytearray()
+    lrfx_data += struct.pack(">H", 0)    # version = 0
+    lrfx_data += struct.pack(">H", 1)    # count = 1
+    # One effect: cmnS (common state)
+    lrfx_data += b"8BIM"
+    lrfx_data += b"cmnS"
+    lrfx_data += struct.pack(">I", 7)    # effect size
+    lrfx_data += struct.pack(">I", 0)    # version
+    lrfx_data += struct.pack("B", 1)     # visible
+    lrfx_data += struct.pack(">H", 0)    # unused
+    ali += make_ali_block(b"lrFX", bytes(lrfx_data))
+
+    # FMsk (filter mask): color_space(2) + 4xUInt16 color(8) + opacity(2) = 12 bytes
+    fmsk_data = bytearray()
+    fmsk_data += struct.pack(">H", 0)           # color space
+    fmsk_data += struct.pack(">HHHH", 0, 0, 0, 0)  # color components
+    fmsk_data += struct.pack(">H", 100)         # opacity
+    ali += make_ali_block(b"FMsk", bytes(fmsk_data))
+
+    # Channel data
+    ch_data = []
+    for ch_id in range(channels):
+        raw = b"\x80" * pixel_bytes
+        ch_buf = struct.pack(">H", 0) + raw
+        ch_data.append(ch_buf)
+
+    lr = build_layer_record_with_ali_and_mask(
+        0, 0, height, width, [0, 1, 2], b"norm", 255, 0x02, "Layer 0",
+        [len(d) for d in ch_data], ali_data=bytes(ali),
+    )
+    li_buf += lr
+
+    for d in ch_data:
+        li_buf += d
+
+    li_length = len(li_buf)
+    if li_length % 2 != 0:
+        li_buf += b"\x00"
+        li_length += 1
+
+    lm_buf += struct.pack(">I", li_length)
+    lm_buf += li_buf
+    lm_buf += struct.pack(">I", 0)  # Global Layer Mask Info
+
+    buf += struct.pack(">I", len(lm_buf))
+    buf += lm_buf
+
+    buf += struct.pack(">H", 0)  # Compression = Raw
+    buf += b"\x80" * pixel_bytes * channels
+
+    output = FIXTURES_DIR / "phase15_effects.psd"
+    output.write_bytes(bytes(buf))
+    print(f"Generated {output} ({len(buf)} bytes)")
+
+
 if __name__ == "__main__":
     generate_phase0_minimal()
     generate_phase1_rle()
@@ -612,4 +967,8 @@ if __name__ == "__main__":
     generate_phase5_psb_minimal()
     generate_phase6_layer_group()
     generate_phase7_resources()
+    generate_phase8_structural()
+    generate_phase10_resources()
+    generate_phase13_path()
+    generate_phase15_effects()
     print("All fixtures generated.")

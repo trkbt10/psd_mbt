@@ -4,6 +4,18 @@
       "path": "username/psd_fmt/types",
       "alias": "types"
     },
-    "moonbitlang/core/buffer"
+    "moonbitlang/core/buffer",
+    {
+      "path": "gmlewis/zlib",
+      "alias": "zlib"
+    },
+    {
+      "path": "gmlewis/io",
+      "alias": "io"
+    },
+    {
+      "path": "gmlewis/flate",
+      "alias": "flate"
+    }
   ]
 }

@@ -3,14 +3,41 @@ package "username/psd_fmt/image_resources"
 
 import {
   "username/psd_fmt/binary",
+  "username/psd_fmt/descriptor",
   "username/psd_fmt/types",
 }
 
 // Values
+pub fn is_path_resource_id(Int) -> Bool
 
 // Errors
 
 // Types and methods
+pub(all) struct BackgroundColor {
+  color_space : Int
+  components : Array[Int]
+}
+pub impl Eq for BackgroundColor
+pub impl Show for BackgroundColor
+
+pub(all) struct BezierKnot {
+  control_preceding : (Double, Double)
+  anchor : (Double, Double)
+  control_leaving : (Double, Double)
+}
+pub impl Eq for BezierKnot
+pub impl Show for BezierKnot
+
+pub(all) struct ClipboardRecord {
+  top : Double
+  left : Double
+  bottom : Double
+  right : Double
+  resolution : Double
+}
+pub impl Eq for ClipboardRecord
+pub impl Show for ClipboardRecord
+
 pub(all) struct GridAndGuides {
   version : Int
   grid_horizontal : Int
@@ -32,19 +59,72 @@ pub(all) struct ImageResourceBlock {
   name : String
   data : Bytes
 }
+pub fn ImageResourceBlock::as_alpha_channel_names(Self) -> Array[String]?
+pub fn ImageResourceBlock::as_background_color(Self) -> BackgroundColor?
+pub fn ImageResourceBlock::as_caption(Self) -> String?
+pub fn ImageResourceBlock::as_color_samplers(Self) -> (Int, @descriptor.Descriptor)?
+pub fn ImageResourceBlock::as_copyright_flag(Self) -> Bool?
+pub fn ImageResourceBlock::as_count_info(Self) -> (Int, @descriptor.Descriptor)?
+pub fn ImageResourceBlock::as_descriptor(Self) -> (Int, @descriptor.Descriptor)?
+pub fn ImageResourceBlock::as_display_info(Self) -> (Int, @descriptor.Descriptor)?
 pub fn ImageResourceBlock::as_global_altitude(Self) -> Int?
 pub fn ImageResourceBlock::as_global_angle(Self) -> Int?
 pub fn ImageResourceBlock::as_grid_and_guides(Self) -> GridAndGuides?
 pub fn ImageResourceBlock::as_icc_profile(Self) -> Bytes?
+pub fn ImageResourceBlock::as_layer_comps(Self) -> (Int, @descriptor.Descriptor)?
+pub fn ImageResourceBlock::as_layer_group_info(Self) -> Array[Int]?
+pub fn ImageResourceBlock::as_layer_groups_enabled(Self) -> Array[Bool]?
+pub fn ImageResourceBlock::as_layer_selection_ids(Self) -> Array[Int]?
+pub fn ImageResourceBlock::as_layer_state_info(Self) -> Int?
+pub fn ImageResourceBlock::as_measurement_scale(Self) -> (Int, @descriptor.Descriptor)?
+pub fn ImageResourceBlock::as_path_resource(Self) -> PathResource?
+pub fn ImageResourceBlock::as_pixel_aspect_ratio(Self) -> PixelAspectRatio?
+pub fn ImageResourceBlock::as_pixel_source_data(Self) -> (Int, @descriptor.Descriptor)?
+pub fn ImageResourceBlock::as_print_flags(Self) -> PrintFlags?
+pub fn ImageResourceBlock::as_print_flags_info(Self) -> PrintFlagsInfo?
+pub fn ImageResourceBlock::as_resolution_info(Self) -> ResolutionInfo?
+pub fn ImageResourceBlock::as_sheet_disclosure(Self) -> (Int, @descriptor.Descriptor)?
+pub fn ImageResourceBlock::as_slices_descriptor(Self) -> (Int, @descriptor.Descriptor)?
 pub fn ImageResourceBlock::as_thumbnail(Self) -> ThumbnailResource?
+pub fn ImageResourceBlock::as_timeline(Self) -> (Int, @descriptor.Descriptor)?
+pub fn ImageResourceBlock::as_timeline_info(Self) -> (Int, @descriptor.Descriptor)?
 pub fn ImageResourceBlock::as_transparency_index(Self) -> Int?
+pub fn ImageResourceBlock::as_url(Self) -> String?
+pub fn ImageResourceBlock::as_url_list(Self) -> Array[URLListEntry]?
+pub fn ImageResourceBlock::as_version_info(Self) -> VersionInfo?
 pub fn ImageResourceBlock::as_xmp(Self) -> String?
 pub fn ImageResourceBlock::build(Self, @binary.Writer) -> Unit
+pub fn ImageResourceBlock::from_alpha_channel_names(Array[String]) -> Self
+pub fn ImageResourceBlock::from_background_color(BackgroundColor) -> Self
+pub fn ImageResourceBlock::from_caption(String) -> Self
+pub fn ImageResourceBlock::from_color_samplers(Int, @descriptor.Descriptor) -> Self
+pub fn ImageResourceBlock::from_copyright_flag(Bool) -> Self
+pub fn ImageResourceBlock::from_count_info(Int, @descriptor.Descriptor) -> Self
+pub fn ImageResourceBlock::from_display_info(Int, @descriptor.Descriptor) -> Self
 pub fn ImageResourceBlock::from_global_altitude(Int) -> Self
 pub fn ImageResourceBlock::from_global_angle(Int) -> Self
 pub fn ImageResourceBlock::from_grid_and_guides(GridAndGuides) -> Self
+pub fn ImageResourceBlock::from_layer_comps(Int, @descriptor.Descriptor) -> Self
+pub fn ImageResourceBlock::from_layer_group_info(Array[Int]) -> Self
+pub fn ImageResourceBlock::from_layer_groups_enabled(Array[Bool]) -> Self
+pub fn ImageResourceBlock::from_layer_selection_ids(Array[Int]) -> Self
+pub fn ImageResourceBlock::from_layer_state_info(Int) -> Self
+pub fn ImageResourceBlock::from_measurement_scale(Int, @descriptor.Descriptor) -> Self
+pub fn ImageResourceBlock::from_path_resource(Int, PathResource) -> Self
+pub fn ImageResourceBlock::from_pixel_aspect_ratio(PixelAspectRatio) -> Self
+pub fn ImageResourceBlock::from_pixel_source_data(Int, @descriptor.Descriptor) -> Self
+pub fn ImageResourceBlock::from_print_flags(PrintFlags) -> Self
+pub fn ImageResourceBlock::from_print_flags_info(PrintFlagsInfo) -> Self
+pub fn ImageResourceBlock::from_resolution_info(ResolutionInfo) -> Self
+pub fn ImageResourceBlock::from_sheet_disclosure(Int, @descriptor.Descriptor) -> Self
+pub fn ImageResourceBlock::from_slices_descriptor(Int, @descriptor.Descriptor) -> Self
 pub fn ImageResourceBlock::from_thumbnail(ThumbnailResource) -> Self
+pub fn ImageResourceBlock::from_timeline(Int, @descriptor.Descriptor) -> Self
+pub fn ImageResourceBlock::from_timeline_info(Int, @descriptor.Descriptor) -> Self
 pub fn ImageResourceBlock::from_transparency_index(Int) -> Self
+pub fn ImageResourceBlock::from_url(String) -> Self
+pub fn ImageResourceBlock::from_url_list(Array[URLListEntry]) -> Self
+pub fn ImageResourceBlock::from_version_info(VersionInfo) -> Self
 pub fn ImageResourceBlock::from_xmp(String) -> Self
 pub fn ImageResourceBlock::parse(@binary.Reader) -> Self raise @types.PsdError
 pub impl Eq for ImageResourceBlock
@@ -57,6 +137,67 @@ pub fn ImageResources::build(Self, @binary.Writer) -> Unit
 pub fn ImageResources::parse(@binary.Reader) -> Self raise @types.PsdError
 pub impl Eq for ImageResources
 pub impl Show for ImageResources
+
+pub(all) enum PathRecord {
+  ClosedSubpathLength(Int)
+  ClosedSubpathBezierKnotLinked(BezierKnot)
+  ClosedSubpathBezierKnotUnlinked(BezierKnot)
+  OpenSubpathLength(Int)
+  OpenSubpathBezierKnotLinked(BezierKnot)
+  OpenSubpathBezierKnotUnlinked(BezierKnot)
+  PathFill(Int)
+  Clipboard(ClipboardRecord)
+  InitialFill(Int)
+}
+pub impl Eq for PathRecord
+pub impl Show for PathRecord
+
+pub(all) struct PathResource {
+  records : Array[PathRecord]
+}
+pub impl Eq for PathResource
+pub impl Show for PathResource
+
+pub(all) struct PixelAspectRatio {
+  version : Int
+  aspect_ratio : Double
+}
+pub impl Eq for PixelAspectRatio
+pub impl Show for PixelAspectRatio
+
+pub(all) struct PrintFlags {
+  labels : Bool
+  crop_marks : Bool
+  color_bars : Bool
+  registration_marks : Bool
+  negative : Bool
+  flip : Bool
+  interpolate : Bool
+  caption : Bool
+  print_flags : Bool
+}
+pub impl Eq for PrintFlags
+pub impl Show for PrintFlags
+
+pub(all) struct PrintFlagsInfo {
+  version : Int
+  center_crop : Bool
+  bleed_width : Int
+  bleed_scale : Int
+}
+pub impl Eq for PrintFlagsInfo
+pub impl Show for PrintFlagsInfo
+
+pub(all) struct ResolutionInfo {
+  h_res : Int
+  h_res_unit : Int
+  width_unit : Int
+  v_res : Int
+  v_res_unit : Int
+  height_unit : Int
+}
+pub impl Eq for ResolutionInfo
+pub impl Show for ResolutionInfo
 
 pub(all) struct ThumbnailResource {
   format : Int
@@ -71,6 +212,24 @@ pub(all) struct ThumbnailResource {
 }
 pub impl Eq for ThumbnailResource
 pub impl Show for ThumbnailResource
+
+pub(all) struct URLListEntry {
+  long_val : Int
+  id : Int
+  url : String
+}
+pub impl Eq for URLListEntry
+pub impl Show for URLListEntry
+
+pub(all) struct VersionInfo {
+  version : Int
+  has_real_merged_data : Bool
+  writer_name : String
+  reader_name : String
+  file_version : Int
+}
+pub impl Eq for VersionInfo
+pub impl Show for VersionInfo
 
 // Type aliases
 
