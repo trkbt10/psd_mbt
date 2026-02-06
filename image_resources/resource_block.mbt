@@ -67,7 +67,7 @@ fn read_pascal_string_even(
   if (1 + len) % 2 != 0 {
     reader.skip(1)
   }
-  bytes_to_ascii(str_bytes)
+  @binary.bytes_to_ascii(str_bytes)
 }
 
 ///|
@@ -82,14 +82,4 @@ fn write_pascal_string_even(writer : @binary.Writer, s : String) -> Unit {
   if (1 + len) % 2 != 0 {
     writer.write_u8(b'\x00')
   }
-}
-
-///|
-/// Convert Bytes to ASCII string.
-fn bytes_to_ascii(data : Bytes) -> String {
-  let buf = @buffer.new(size_hint=data.length())
-  for i = 0; i < data.length(); i = i + 1 {
-    buf.write_char(data[i].to_int().unsafe_to_char())
-  }
-  buf.to_string()
 }

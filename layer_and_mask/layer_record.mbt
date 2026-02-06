@@ -166,7 +166,7 @@ fn read_pascal_string_4byte(
   if pad > 0 {
     reader.skip(pad)
   }
-  bytes_to_ascii(str_bytes)
+  @binary.bytes_to_ascii(str_bytes)
 }
 
 ///|
@@ -202,13 +202,4 @@ pub fn ChannelInfo::is_user_mask(self : ChannelInfo) -> Bool {
 /// Channel ID -3 = real user supplied layer mask (when both vector and user mask present).
 pub fn ChannelInfo::is_real_mask(self : ChannelInfo) -> Bool {
   self.channel_id == -3
-}
-
-///|
-fn bytes_to_ascii(data : Bytes) -> String {
-  let buf = @buffer.new(size_hint=data.length())
-  for i = 0; i < data.length(); i = i + 1 {
-    buf.write_char(data[i].to_int().unsafe_to_char())
-  }
-  buf.to_string()
 }

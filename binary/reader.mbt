@@ -140,3 +140,15 @@ pub fn Reader::skip(self : Reader, n : Int) -> Unit raise @types.PsdError {
   }
   self.offset += n
 }
+
+///|
+/// Convert raw bytes to an ASCII string.
+/// Each byte is directly mapped to a char via unsafe_to_char().
+/// Used for PSD key strings and Pascal strings that are known ASCII.
+pub fn bytes_to_ascii(data : Bytes) -> String {
+  let buf = @buffer.new(size_hint=data.length())
+  for i = 0; i < data.length(); i = i + 1 {
+    buf.write_char(data[i].to_int().unsafe_to_char())
+  }
+  buf.to_string()
+}

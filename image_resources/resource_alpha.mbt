@@ -20,7 +20,7 @@ pub fn ImageResourceBlock::as_alpha_channel_names(
       let len = reader.read_u8().to_int()
       if len > 0 {
         let str_bytes = reader.read_bytes(len)
-        names.push(bytes_to_ascii(str_bytes))
+        names.push(@binary.bytes_to_ascii(str_bytes))
       } else {
         names.push("")
       }
