@@ -282,3 +282,52 @@ test "DocumentSpecificIDs round-trip" {
   inspect(block.resource_id, content="1081")
   inspect(block.as_document_specific_ids(), content="Some(1000)")
 }
+
+///|
+test "DocumentIdsSeed round-trip" {
+  let block = ImageResourceBlock::from_document_ids_seed(12345)
+  inspect(block.resource_id, content="1043")
+  inspect(block.as_document_ids_seed(), content="Some(12345)")
+}
+
+///|
+test "AutoSaveFilePath round-trip" {
+  let block = ImageResourceBlock::from_auto_save_file_path("/tmp/test.psd")
+  inspect(block.resource_id, content="1086")
+  inspect(block.as_auto_save_file_path(), content="Some(\"/tmp/test.psd\")")
+}
+
+///|
+test "AutoSaveFormat round-trip" {
+  let block = ImageResourceBlock::from_auto_save_format("Photoshop")
+  inspect(block.resource_id, content="1087")
+  inspect(block.as_auto_save_format(), content="Some(\"Photoshop\")")
+}
+
+///|
+test "PrintScale round-trip" {
+  let info : PrintScale = {
+    style: 2,
+    x_location: 1.0,
+    y_location: 2.0,
+    scale: 0.5,
+  }
+  let block = ImageResourceBlock::from_print_scale(info)
+  inspect(block.resource_id, content="1089")
+  match block.as_print_scale() {
+    Some(parsed) => {
+      inspect(parsed.style, content="2")
+      inspect(parsed.scale, content="0.5")
+    }
+    None => panic()
+  }
+}
+
+///|
+test "ICCUntagged round-trip" {
+  let block = ImageResourceBlock::from_icc_untagged(true)
+  inspect(block.resource_id, content="1074")
+  inspect(block.as_icc_untagged(), content="Some(true)")
+  let block2 = ImageResourceBlock::from_icc_untagged(false)
+  inspect(block2.as_icc_untagged(), content="Some(false)")
+}

@@ -61,6 +61,8 @@ pub(all) struct ImageResourceBlock {
 }
 pub fn ImageResourceBlock::as_alpha_channel_names(Self) -> Array[String]?
 pub fn ImageResourceBlock::as_alpha_identifiers(Self) -> Array[Int]?
+pub fn ImageResourceBlock::as_auto_save_file_path(Self) -> String?
+pub fn ImageResourceBlock::as_auto_save_format(Self) -> String?
 pub fn ImageResourceBlock::as_background_color(Self) -> BackgroundColor?
 pub fn ImageResourceBlock::as_caption(Self) -> String?
 pub fn ImageResourceBlock::as_color_samplers(Self) -> (Int, @descriptor.Descriptor)?
@@ -68,11 +70,13 @@ pub fn ImageResourceBlock::as_copyright_flag(Self) -> Bool?
 pub fn ImageResourceBlock::as_count_info(Self) -> (Int, @descriptor.Descriptor)?
 pub fn ImageResourceBlock::as_descriptor(Self) -> (Int, @descriptor.Descriptor)?
 pub fn ImageResourceBlock::as_display_info(Self) -> (Int, @descriptor.Descriptor)?
+pub fn ImageResourceBlock::as_document_ids_seed(Self) -> Int?
 pub fn ImageResourceBlock::as_document_specific_ids(Self) -> Int?
 pub fn ImageResourceBlock::as_global_altitude(Self) -> Int?
 pub fn ImageResourceBlock::as_global_angle(Self) -> Int?
 pub fn ImageResourceBlock::as_grid_and_guides(Self) -> GridAndGuides?
 pub fn ImageResourceBlock::as_icc_profile(Self) -> Bytes?
+pub fn ImageResourceBlock::as_icc_untagged(Self) -> Bool?
 pub fn ImageResourceBlock::as_indexed_color_table_count(Self) -> Int?
 pub fn ImageResourceBlock::as_layer_comps(Self) -> (Int, @descriptor.Descriptor)?
 pub fn ImageResourceBlock::as_layer_group_info(Self) -> Array[Int]?
@@ -86,6 +90,7 @@ pub fn ImageResourceBlock::as_pixel_aspect_ratio(Self) -> PixelAspectRatio?
 pub fn ImageResourceBlock::as_pixel_source_data(Self) -> (Int, @descriptor.Descriptor)?
 pub fn ImageResourceBlock::as_print_flags(Self) -> PrintFlags?
 pub fn ImageResourceBlock::as_print_flags_info(Self) -> PrintFlagsInfo?
+pub fn ImageResourceBlock::as_print_scale(Self) -> PrintScale?
 pub fn ImageResourceBlock::as_resolution_info(Self) -> ResolutionInfo?
 pub fn ImageResourceBlock::as_sheet_disclosure(Self) -> (Int, @descriptor.Descriptor)?
 pub fn ImageResourceBlock::as_slices_descriptor(Self) -> (Int, @descriptor.Descriptor)?
@@ -101,16 +106,20 @@ pub fn ImageResourceBlock::as_xmp(Self) -> String?
 pub fn ImageResourceBlock::build(Self, @binary.Writer) -> Unit
 pub fn ImageResourceBlock::from_alpha_channel_names(Array[String]) -> Self
 pub fn ImageResourceBlock::from_alpha_identifiers(Array[Int]) -> Self
+pub fn ImageResourceBlock::from_auto_save_file_path(String) -> Self
+pub fn ImageResourceBlock::from_auto_save_format(String) -> Self
 pub fn ImageResourceBlock::from_background_color(BackgroundColor) -> Self
 pub fn ImageResourceBlock::from_caption(String) -> Self
 pub fn ImageResourceBlock::from_color_samplers(Int, @descriptor.Descriptor) -> Self
 pub fn ImageResourceBlock::from_copyright_flag(Bool) -> Self
 pub fn ImageResourceBlock::from_count_info(Int, @descriptor.Descriptor) -> Self
 pub fn ImageResourceBlock::from_display_info(Int, @descriptor.Descriptor) -> Self
+pub fn ImageResourceBlock::from_document_ids_seed(Int) -> Self
 pub fn ImageResourceBlock::from_document_specific_ids(Int) -> Self
 pub fn ImageResourceBlock::from_global_altitude(Int) -> Self
 pub fn ImageResourceBlock::from_global_angle(Int) -> Self
 pub fn ImageResourceBlock::from_grid_and_guides(GridAndGuides) -> Self
+pub fn ImageResourceBlock::from_icc_untagged(Bool) -> Self
 pub fn ImageResourceBlock::from_indexed_color_table_count(Int) -> Self
 pub fn ImageResourceBlock::from_layer_comps(Int, @descriptor.Descriptor) -> Self
 pub fn ImageResourceBlock::from_layer_group_info(Array[Int]) -> Self
@@ -124,6 +133,7 @@ pub fn ImageResourceBlock::from_pixel_aspect_ratio(PixelAspectRatio) -> Self
 pub fn ImageResourceBlock::from_pixel_source_data(Int, @descriptor.Descriptor) -> Self
 pub fn ImageResourceBlock::from_print_flags(PrintFlags) -> Self
 pub fn ImageResourceBlock::from_print_flags_info(PrintFlagsInfo) -> Self
+pub fn ImageResourceBlock::from_print_scale(PrintScale) -> Self
 pub fn ImageResourceBlock::from_resolution_info(ResolutionInfo) -> Self
 pub fn ImageResourceBlock::from_sheet_disclosure(Int, @descriptor.Descriptor) -> Self
 pub fn ImageResourceBlock::from_slices_descriptor(Int, @descriptor.Descriptor) -> Self
@@ -197,6 +207,15 @@ pub(all) struct PrintFlagsInfo {
 }
 pub impl Eq for PrintFlagsInfo
 pub impl Show for PrintFlagsInfo
+
+pub(all) struct PrintScale {
+  style : Int
+  x_location : Double
+  y_location : Double
+  scale : Double
+}
+pub impl Eq for PrintScale
+pub impl Show for PrintScale
 
 pub(all) struct ResolutionInfo {
   h_res : Int

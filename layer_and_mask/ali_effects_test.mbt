@@ -212,3 +212,136 @@ test "ALI adjustment key detection" {
   inspect(is_adjustment_key(b"test"), content="false")
   inspect(is_adjustment_key(b"luni"), content="false")
 }
+
+///|
+test "ALI compositor used round-trip" {
+  let desc : @descriptor.Descriptor = {
+    class_id_name: "",
+    class_id: "null",
+    items: [{ key: "comp", value: @descriptor.DescriptorValue::Integer(2) }],
+  }
+  let ali = AdditionalLayerInfo::from_compositor_used(16, desc)
+  inspect(ali.key == b"cinf", content="true")
+  match ali.as_compositor_used() {
+    Some((ver, d)) => {
+      inspect(ver, content="16")
+      inspect(d.items.length(), content="1")
+    }
+    None => panic()
+  }
+}
+
+///|
+test "ALI vector stroke data round-trip" {
+  let desc : @descriptor.Descriptor = {
+    class_id_name: "",
+    class_id: "null",
+    items: [{ key: "enab", value: @descriptor.DescriptorValue::Boolean(true) }],
+  }
+  let ali = AdditionalLayerInfo::from_vector_stroke_data(16, desc)
+  inspect(ali.key == b"vstk", content="true")
+  match ali.as_vector_stroke_data() {
+    Some((ver, d)) => {
+      inspect(ver, content="16")
+      inspect(d.items.length(), content="1")
+    }
+    None => panic()
+  }
+}
+
+///|
+test "ALI vector stroke content round-trip" {
+  let desc : @descriptor.Descriptor = {
+    class_id_name: "",
+    class_id: "null",
+    items: [],
+  }
+  let ali = AdditionalLayerInfo::from_vector_stroke_content(b"SoCo", 16, desc)
+  inspect(ali.key == b"vscg", content="true")
+  match ali.as_vector_stroke_content() {
+    Some((key, ver, _)) => {
+      inspect(key == b"SoCo", content="true")
+      inspect(ver, content="16")
+    }
+    None => panic()
+  }
+}
+
+///|
+test "ALI text engine data round-trip" {
+  let data = b"\x00\x01\x02\x03\x04\x05"
+  let ali = AdditionalLayerInfo::from_text_engine_data(data)
+  inspect(ali.key == b"Txt2", content="true")
+  match ali.as_text_engine_data() {
+    Some(parsed) => inspect(parsed == data, content="true")
+    None => panic()
+  }
+}
+
+///|
+test "ALI annotations round-trip" {
+  let info : AnnotationsData = {
+    major_version: 2,
+    minor_version: 1,
+    count: 0,
+    data: b"",
+  }
+  let ali = AdditionalLayerInfo::from_annotations(info)
+  inspect(ali.key == b"Anno", content="true")
+  match ali.as_annotations() {
+    Some(parsed) => {
+      inspect(parsed.major_version, content="2")
+      inspect(parsed.minor_version, content="1")
+      inspect(parsed.count, content="0")
+    }
+    None => panic()
+  }
+}
+
+///|
+test "ALI gradient map round-trip" {
+  let data = b"\x01\x00\x03\x04\x05"
+  let info : GradientMapData = { version: 1, data }
+  let ali = AdditionalLayerInfo::from_gradient_map(info)
+  inspect(ali.key == b"grdm", content="true")
+  match ali.as_gradient_map() {
+    Some(parsed) => {
+      inspect(parsed.version, content="1")
+      inspect(parsed.data == data, content="true")
+    }
+    None => panic()
+  }
+}
+
+///|
+test "ALI placed layer obsolete round-trip" {
+  let desc : @descriptor.Descriptor = {
+    class_id_name: "",
+    class_id: "warp",
+    items: [],
+  }
+  let info : PlacedLayerData = {
+    place_type: b"plcL",
+    version: 3,
+    unique_id: "abc123",
+    page_number: 1,
+    total_pages: 1,
+    anti_alias_policy: 16,
+    layer_type: 2,
+    transform: [1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 100.0, 100.0],
+    warp_version: 0,
+    warp_descriptor_version: 16,
+    warp_descriptor: desc,
+  }
+  let ali = AdditionalLayerInfo::from_placed_layer_obsolete(info)
+  inspect(ali.key == b"plLd", content="true")
+  match ali.as_placed_layer_obsolete() {
+    Some(parsed) => {
+      inspect(parsed.version, content="3")
+      inspect(parsed.unique_id, content="abc123")
+      inspect(parsed.layer_type, content="2")
+      inspect(parsed.transform.length(), content="8")
+    }
+    None => panic()
+  }
+}

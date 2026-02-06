@@ -557,3 +557,155 @@ pub fn ImageResourceBlock::from_document_specific_ids(
   w.write_u32_be(id.reinterpret_as_uint())
   { resource_id: 1081, name: "", data: w.to_bytes() }
 }
+
+///|
+/// Document-specific IDs seed (ID 1043) - UInt32.
+pub fn ImageResourceBlock::as_document_ids_seed(
+  self : ImageResourceBlock,
+) -> Int? {
+  if self.resource_id != 1043 || self.data.length() < 4 {
+    return None
+  }
+  let reader = @binary.Reader::new(self.data)
+  Some(reader.read_u32_be().reinterpret_as_int()) catch {
+    _ => None
+  }
+}
+
+///|
+pub fn ImageResourceBlock::from_document_ids_seed(
+  seed : Int,
+) -> ImageResourceBlock {
+  let w = @binary.Writer::new()
+  w.write_u32_be(seed.reinterpret_as_uint())
+  { resource_id: 1043, name: "", data: w.to_bytes() }
+}
+
+///|
+/// AutoSaveFilePath (ID 1086) - Unicode string.
+pub fn ImageResourceBlock::as_auto_save_file_path(
+  self : ImageResourceBlock,
+) -> String? {
+  if self.resource_id != 1086 {
+    return None
+  }
+  parse_unicode_resource_string(self.data)
+}
+
+///|
+pub fn ImageResourceBlock::from_auto_save_file_path(
+  path : String,
+) -> ImageResourceBlock {
+  { resource_id: 1086, name: "", data: build_unicode_resource_string(path) }
+}
+
+///|
+/// AutoSaveFormat (ID 1087) - Unicode string.
+pub fn ImageResourceBlock::as_auto_save_format(
+  self : ImageResourceBlock,
+) -> String? {
+  if self.resource_id != 1087 {
+    return None
+  }
+  parse_unicode_resource_string(self.data)
+}
+
+///|
+pub fn ImageResourceBlock::from_auto_save_format(
+  format : String,
+) -> ImageResourceBlock {
+  { resource_id: 1087, name: "", data: build_unicode_resource_string(format) }
+}
+
+///|
+/// Parse a Unicode string resource: 4-byte length + UTF-16BE chars.
+fn parse_unicode_resource_string(data : Bytes) -> String? {
+  if data.length() < 4 {
+    return None
+  }
+  let reader = @binary.Reader::new(data)
+  try {
+    let len = reader.read_u32_be().reinterpret_as_int()
+    let buf = @buffer.new(size_hint=len)
+    for _i = 0; _i < len; _i = _i + 1 {
+      let code = reader.read_u16_be().reinterpret_as_int()
+      buf.write_char(code.unsafe_to_char())
+    }
+    Some(buf.to_string())
+  } catch {
+    _ => None
+  }
+}
+
+///|
+/// Build a Unicode string resource: 4-byte length + UTF-16BE chars.
+fn build_unicode_resource_string(s : String) -> Bytes {
+  let w = @binary.Writer::new()
+  w.write_u32_be(s.length().reinterpret_as_uint())
+  for i = 0; i < s.length(); i = i + 1 {
+    w.write_u16_be(s[i].to_int().reinterpret_as_uint())
+  }
+  w.to_bytes()
+}
+
+///|
+/// PrintScale (ID 1089) - style(2) + x_location(float32) + y_location(float32) + scale(float32).
+pub(all) struct PrintScale {
+  style : Int // 0=centered, 1=size to fit, 2=user defined
+  x_location : Double
+  y_location : Double
+  scale : Double
+} derive(Eq, Show)
+
+///|
+pub fn ImageResourceBlock::as_print_scale(
+  self : ImageResourceBlock,
+) -> PrintScale? {
+  if self.resource_id != 1089 || self.data.length() < 14 {
+    return None
+  }
+  let reader = @binary.Reader::new(self.data)
+  try {
+    let style = reader.read_u16_be().reinterpret_as_int()
+    // Float32: read 4 bytes as UInt32, reinterpret as Float
+    let x_bits = reader.read_u32_be()
+    let y_bits = reader.read_u32_be()
+    let s_bits = reader.read_u32_be()
+    let x_location = Float::reinterpret_from_uint(x_bits).to_double()
+    let y_location = Float::reinterpret_from_uint(y_bits).to_double()
+    let scale = Float::reinterpret_from_uint(s_bits).to_double()
+    Some({ style, x_location, y_location, scale })
+  } catch {
+    _ => None
+  }
+}
+
+///|
+pub fn ImageResourceBlock::from_print_scale(
+  info : PrintScale,
+) -> ImageResourceBlock {
+  let w = @binary.Writer::new()
+  w.write_u16_be(info.style.reinterpret_as_uint())
+  w.write_u32_be(Float::from_double(info.x_location).reinterpret_as_uint())
+  w.write_u32_be(Float::from_double(info.y_location).reinterpret_as_uint())
+  w.write_u32_be(Float::from_double(info.scale).reinterpret_as_uint())
+  { resource_id: 1089, name: "", data: w.to_bytes() }
+}
+
+///|
+/// ICCUntaggedProfile (ID 1074) - 1 byte boolean.
+/// Disables any assumed profile handling when opening.
+pub fn ImageResourceBlock::as_icc_untagged(self : ImageResourceBlock) -> Bool? {
+  if self.resource_id != 1074 || self.data.length() < 1 {
+    return None
+  }
+  Some(self.data[0] != b'\x00')
+}
+
+///|
+pub fn ImageResourceBlock::from_icc_untagged(
+  untagged : Bool,
+) -> ImageResourceBlock {
+  let data = Bytes::from_array([if untagged { b'\x01' } else { b'\x00' }])
+  { resource_id: 1074, name: "", data }
+}

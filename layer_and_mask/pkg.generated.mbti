@@ -23,9 +23,12 @@ pub(all) struct AdditionalLayerInfo {
   data : Bytes
 }
 pub fn AdditionalLayerInfo::as_adjustment_descriptor(Self) -> (Int, @descriptor.Descriptor)?
+pub fn AdditionalLayerInfo::as_annotations(Self) -> AnnotationsData?
 pub fn AdditionalLayerInfo::as_blend_clipping(Self) -> Bool?
+pub fn AdditionalLayerInfo::as_compositor_used(Self) -> (Int, @descriptor.Descriptor)?
 pub fn AdditionalLayerInfo::as_fill_opacity(Self) -> Int?
 pub fn AdditionalLayerInfo::as_filter_mask(Self) -> FilterMask?
+pub fn AdditionalLayerInfo::as_gradient_map(Self) -> GradientMapData?
 pub fn AdditionalLayerInfo::as_interior_blend(Self) -> Bool?
 pub fn AdditionalLayerInfo::as_knockout(Self) -> Bool?
 pub fn AdditionalLayerInfo::as_layer_id(Self) -> Int?
@@ -35,20 +38,27 @@ pub fn AdditionalLayerInfo::as_legacy_effects(Self) -> LegacyEffects?
 pub fn AdditionalLayerInfo::as_metadata_setting(Self) -> Array[MetadataItem]?
 pub fn AdditionalLayerInfo::as_object_effects(Self) -> (Int, @descriptor.Descriptor)?
 pub fn AdditionalLayerInfo::as_placed_layer(Self) -> (Int, @descriptor.Descriptor)?
+pub fn AdditionalLayerInfo::as_placed_layer_obsolete(Self) -> PlacedLayerData?
 pub fn AdditionalLayerInfo::as_protection_settings(Self) -> Int?
 pub fn AdditionalLayerInfo::as_reference_point(Self) -> (Double, Double)?
 pub fn AdditionalLayerInfo::as_section_divider(Self) -> SectionDivider?
 pub fn AdditionalLayerInfo::as_sheet_color(Self) -> Array[Int]?
+pub fn AdditionalLayerInfo::as_text_engine_data(Self) -> Bytes?
 pub fn AdditionalLayerInfo::as_transparency_shapes_layer(Self) -> Bool?
 pub fn AdditionalLayerInfo::as_type_tool(Self) -> TypeToolInfo?
 pub fn AdditionalLayerInfo::as_unicode_name(Self) -> String?
 pub fn AdditionalLayerInfo::as_vector_mask(Self) -> VectorMask?
 pub fn AdditionalLayerInfo::as_vector_origination(Self) -> (Int, @descriptor.Descriptor)?
+pub fn AdditionalLayerInfo::as_vector_stroke_content(Self) -> (Bytes, Int, @descriptor.Descriptor)?
+pub fn AdditionalLayerInfo::as_vector_stroke_data(Self) -> (Int, @descriptor.Descriptor)?
 pub fn AdditionalLayerInfo::build(Self, @binary.Writer, @types.PsdVersion) -> Unit
 pub fn AdditionalLayerInfo::from_adjustment_descriptor(Bytes, Int, @descriptor.Descriptor) -> Self
+pub fn AdditionalLayerInfo::from_annotations(AnnotationsData) -> Self
 pub fn AdditionalLayerInfo::from_blend_clipping(Bool) -> Self
+pub fn AdditionalLayerInfo::from_compositor_used(Int, @descriptor.Descriptor) -> Self
 pub fn AdditionalLayerInfo::from_fill_opacity(Int) -> Self
 pub fn AdditionalLayerInfo::from_filter_mask(FilterMask) -> Self
+pub fn AdditionalLayerInfo::from_gradient_map(GradientMapData) -> Self
 pub fn AdditionalLayerInfo::from_interior_blend(Bool) -> Self
 pub fn AdditionalLayerInfo::from_knockout(Bool) -> Self
 pub fn AdditionalLayerInfo::from_layer_id(Int) -> Self
@@ -58,16 +68,29 @@ pub fn AdditionalLayerInfo::from_legacy_effects(LegacyEffects) -> Self
 pub fn AdditionalLayerInfo::from_metadata_setting(Array[MetadataItem]) -> Self
 pub fn AdditionalLayerInfo::from_object_effects(Int, @descriptor.Descriptor) -> Self
 pub fn AdditionalLayerInfo::from_placed_layer(Bytes, Int, @descriptor.Descriptor) -> Self
+pub fn AdditionalLayerInfo::from_placed_layer_obsolete(PlacedLayerData) -> Self
 pub fn AdditionalLayerInfo::from_protection_settings(Int) -> Self
 pub fn AdditionalLayerInfo::from_reference_point(Double, Double) -> Self
 pub fn AdditionalLayerInfo::from_sheet_color(Array[Int]) -> Self
+pub fn AdditionalLayerInfo::from_text_engine_data(Bytes) -> Self
 pub fn AdditionalLayerInfo::from_transparency_shapes_layer(Bool) -> Self
 pub fn AdditionalLayerInfo::from_type_tool(TypeToolInfo) -> Self
 pub fn AdditionalLayerInfo::from_vector_mask(Bytes, VectorMask) -> Self
 pub fn AdditionalLayerInfo::from_vector_origination(Int, @descriptor.Descriptor) -> Self
+pub fn AdditionalLayerInfo::from_vector_stroke_content(Bytes, Int, @descriptor.Descriptor) -> Self
+pub fn AdditionalLayerInfo::from_vector_stroke_data(Int, @descriptor.Descriptor) -> Self
 pub fn AdditionalLayerInfo::parse(@binary.Reader, @types.PsdVersion) -> Self raise @types.PsdError
 pub impl Eq for AdditionalLayerInfo
 pub impl Show for AdditionalLayerInfo
+
+pub(all) struct AnnotationsData {
+  major_version : Int
+  minor_version : Int
+  count : Int
+  data : Bytes
+}
+pub impl Eq for AnnotationsData
+pub impl Show for AnnotationsData
 
 pub(all) struct ChannelImageData {
   compression : @types.Compression
@@ -116,6 +139,13 @@ pub(all) struct GlobalMaskFields {
 }
 pub impl Eq for GlobalMaskFields
 pub impl Show for GlobalMaskFields
+
+pub(all) struct GradientMapData {
+  version : Int
+  data : Bytes
+}
+pub impl Eq for GradientMapData
+pub impl Show for GradientMapData
 
 pub(all) struct LayerAndMaskInfo {
   layer_info : LayerInfo?
@@ -213,6 +243,22 @@ pub(all) struct MetadataItem {
 }
 pub impl Eq for MetadataItem
 pub impl Show for MetadataItem
+
+pub(all) struct PlacedLayerData {
+  place_type : Bytes
+  version : Int
+  unique_id : String
+  page_number : Int
+  total_pages : Int
+  anti_alias_policy : Int
+  layer_type : Int
+  transform : Array[Double]
+  warp_version : Int
+  warp_descriptor_version : Int
+  warp_descriptor : @descriptor.Descriptor
+}
+pub impl Eq for PlacedLayerData
+pub impl Show for PlacedLayerData
 
 pub(all) struct SectionDivider {
   divider_type : Int
