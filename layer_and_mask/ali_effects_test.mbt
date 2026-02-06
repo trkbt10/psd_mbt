@@ -314,6 +314,81 @@ test "ALI gradient map round-trip" {
 }
 
 ///|
+test "ALI user mask (LMsk) round-trip" {
+  let mask : UserMask = {
+    color_space: 0,
+    color_components: [65535, 0, 0, 0],
+    opacity: 100,
+    flag: 128,
+  }
+  let ali = AdditionalLayerInfo::from_user_mask(mask)
+  inspect(ali.key == b"LMsk", content="true")
+  inspect(ali.data.length(), content="13")
+  match ali.as_user_mask() {
+    Some(parsed) => {
+      inspect(parsed.color_space, content="0")
+      inspect(parsed.color_components[0], content="65535")
+      inspect(parsed.color_components[1], content="0")
+      inspect(parsed.opacity, content="100")
+      inspect(parsed.flag, content="128")
+    }
+    None => panic()
+  }
+}
+
+///|
+test "ALI blending restrictions (brst) round-trip" {
+  let channels = [0, 1, 2]
+  let ali = AdditionalLayerInfo::from_blending_restrictions(channels)
+  inspect(ali.key == b"brst", content="true")
+  inspect(ali.data.length(), content="12")
+  match ali.as_blending_restrictions() {
+    Some(parsed) => {
+      inspect(parsed.length(), content="3")
+      inspect(parsed[0], content="0")
+      inspect(parsed[1], content="1")
+      inspect(parsed[2], content="2")
+    }
+    None => panic()
+  }
+}
+
+///|
+test "ALI layer mask as global (lmgm) round-trip" {
+  let ali = AdditionalLayerInfo::from_layer_mask_as_global(true)
+  inspect(ali.key == b"lmgm", content="true")
+  match ali.as_mask_as_global() {
+    Some(flag) => inspect(flag, content="true")
+    None => panic()
+  }
+  let ali2 = AdditionalLayerInfo::from_layer_mask_as_global(false)
+  match ali2.as_mask_as_global() {
+    Some(flag) => inspect(flag, content="false")
+    None => panic()
+  }
+}
+
+///|
+test "ALI vector mask as global (vmgm) round-trip" {
+  let ali = AdditionalLayerInfo::from_vector_mask_as_global(true)
+  inspect(ali.key == b"vmgm", content="true")
+  match ali.as_mask_as_global() {
+    Some(flag) => inspect(flag, content="true")
+    None => panic()
+  }
+}
+
+///|
+test "ALI blending restrictions empty" {
+  let ali = AdditionalLayerInfo::from_blending_restrictions([])
+  inspect(ali.data.length(), content="0")
+  match ali.as_blending_restrictions() {
+    Some(parsed) => inspect(parsed.length(), content="0")
+    None => panic()
+  }
+}
+
+///|
 test "ALI placed layer obsolete round-trip" {
   let desc : @descriptor.Descriptor = {
     class_id_name: "",

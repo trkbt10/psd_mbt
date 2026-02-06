@@ -1,6 +1,21 @@
+// Additional Layer Information: Effects Layer keys
+//
+// PSD File Format Specification, "Additional Layer Information" section.
+
 ///|
 /// Legacy Effects Layer (key 'lrFX').
-/// Contains version + count + effect records.
+///
+/// Spec: "Key is 'lrFX'. (Photoshop 5.0)"
+///   "Effects Layer (Photoshop 5.0). Also see Object-based effects layer info."
+///   | Length | Description               |
+///   |--------|---------------------------|
+///   | 2      | Version (= 0)             |
+///   | 2      | Effects count             |
+///   | var    | For each effect:          |
+///   |        |   4 bytes signature ('8BIM') |
+///   |        |   4 bytes type ('cmnS', 'dsdw', 'isdw', 'oglw', 'iglw', 'bevl', 'sofi') |
+///   |        |   4 bytes data size       |
+///   |        |   var data                |
 pub(all) struct LegacyEffects {
   version : Int
   effects : Array[LegacyEffect]
@@ -14,7 +29,6 @@ pub(all) struct LegacyEffect {
 } derive(Eq, Show)
 
 ///|
-/// Parse legacy effects from ALI data (key 'lrFX').
 pub fn AdditionalLayerInfo::as_legacy_effects(
   self : AdditionalLayerInfo,
 ) -> LegacyEffects? {
@@ -40,7 +54,6 @@ pub fn AdditionalLayerInfo::as_legacy_effects(
 }
 
 ///|
-/// Build legacy effects to ALI data.
 pub fn AdditionalLayerInfo::from_legacy_effects(
   effects : LegacyEffects,
 ) -> AdditionalLayerInfo {
@@ -60,7 +73,15 @@ pub fn AdditionalLayerInfo::from_legacy_effects(
 }
 
 ///|
-/// Object Effects (key 'lfx2') - version(4) + Descriptor.
+/// Object-based Effects (key 'lfx2').
+///
+/// Spec: "Key is 'lfx2'. (Photoshop 6.0)"
+///   "Object-based effects layer info. Also see Effects Layer."
+///   | Length | Description         |
+///   |--------|---------------------|
+///   | 4      | Object effects version |
+///   | 4      | Descriptor version  |
+///   | var    | Descriptor          |
 pub fn AdditionalLayerInfo::as_object_effects(
   self : AdditionalLayerInfo,
 ) -> (Int, @descriptor.Descriptor)? {
@@ -86,51 +107,4 @@ pub fn AdditionalLayerInfo::from_object_effects(
   w.write_u32_be(version.reinterpret_as_uint())
   desc.build(w)
   { signature: b"\x38\x42\x49\x4D", key: b"lfx2", data: w.to_bytes() }
-}
-
-///|
-/// Filter Mask (key 'FMsk') - color(10) + opacity(2).
-pub(all) struct FilterMask {
-  color_space : Int
-  color_components : Array[Int] // 4x UInt16
-  opacity : Int
-} derive(Eq, Show)
-
-///|
-pub fn AdditionalLayerInfo::as_filter_mask(
-  self : AdditionalLayerInfo,
-) -> FilterMask? {
-  if self.key != b"FMsk" || self.data.length() < 12 {
-    return None
-  }
-  let reader = @binary.Reader::new(self.data)
-  try {
-    let color_space = reader.read_u16_be().reinterpret_as_int()
-    let c0 = reader.read_u16_be().reinterpret_as_int()
-    let c1 = reader.read_u16_be().reinterpret_as_int()
-    let c2 = reader.read_u16_be().reinterpret_as_int()
-    let c3 = reader.read_u16_be().reinterpret_as_int()
-    let opacity = reader.read_u16_be().reinterpret_as_int()
-    Some({ color_space, color_components: [c0, c1, c2, c3], opacity })
-  } catch {
-    _ => None
-  }
-}
-
-///|
-pub fn AdditionalLayerInfo::from_filter_mask(
-  mask : FilterMask,
-) -> AdditionalLayerInfo {
-  let w = @binary.Writer::new()
-  w.write_u16_be(mask.color_space.reinterpret_as_uint())
-  for i = 0; i < 4; i = i + 1 {
-    let v = if i < mask.color_components.length() {
-      mask.color_components[i]
-    } else {
-      0
-    }
-    w.write_u16_be(v.reinterpret_as_uint())
-  }
-  w.write_u16_be(mask.opacity.reinterpret_as_uint())
-  { signature: b"\x38\x42\x49\x4D", key: b"FMsk", data: w.to_bytes() }
 }

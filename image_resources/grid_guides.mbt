@@ -1,4 +1,25 @@
+// Image Resources: Grid and Guides
+//
+// PSD File Format Specification, "Image Resources" section.
+
 ///|
+/// Grid and Guides Information (ID 1032).
+///
+/// Spec: "0x0408 (Photoshop 4.0)"
+///   "Grid and guides information. See See Grid and guides resource format."
+///   | Length | Description                       |
+///   |--------|-----------------------------------|
+///   | 4      | Version (= 1)                    |
+///   | 4      | Future: grid horizontal (32/inch) |
+///   | 4      | Future: grid vertical (32/inch)   |
+///   | 4      | Number of guide resource blocks   |
+///   | var    | Guide records (5 bytes each)      |
+///
+///   Guide record:
+///   | Length | Description                                   |
+///   |--------|-----------------------------------------------|
+///   | 4      | Location of guide in document coordinates     |
+///   | 1      | Direction (0 = vertical, 1 = horizontal)      |
 pub(all) struct GridAndGuides {
   version : Int
   grid_horizontal : Int
@@ -13,7 +34,6 @@ pub(all) struct GuideRecord {
 } derive(Eq, Show)
 
 ///|
-/// Parse a grid and guides resource from an ImageResourceBlock (ID 1032).
 pub fn ImageResourceBlock::as_grid_and_guides(
   self : ImageResourceBlock,
 ) -> GridAndGuides? {
@@ -39,7 +59,6 @@ pub fn ImageResourceBlock::as_grid_and_guides(
 }
 
 ///|
-/// Create a grid and guides resource block.
 pub fn ImageResourceBlock::from_grid_and_guides(
   gg : GridAndGuides,
 ) -> ImageResourceBlock {

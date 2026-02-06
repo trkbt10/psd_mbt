@@ -25,6 +25,7 @@ pub(all) struct AdditionalLayerInfo {
 pub fn AdditionalLayerInfo::as_adjustment_descriptor(Self) -> (Int, @descriptor.Descriptor)?
 pub fn AdditionalLayerInfo::as_annotations(Self) -> AnnotationsData?
 pub fn AdditionalLayerInfo::as_blend_clipping(Self) -> Bool?
+pub fn AdditionalLayerInfo::as_blending_restrictions(Self) -> Array[Int]?
 pub fn AdditionalLayerInfo::as_compositor_used(Self) -> (Int, @descriptor.Descriptor)?
 pub fn AdditionalLayerInfo::as_fill_opacity(Self) -> Int?
 pub fn AdditionalLayerInfo::as_filter_mask(Self) -> FilterMask?
@@ -35,6 +36,7 @@ pub fn AdditionalLayerInfo::as_layer_id(Self) -> Int?
 pub fn AdditionalLayerInfo::as_layer_name_source(Self) -> Bytes?
 pub fn AdditionalLayerInfo::as_layer_version(Self) -> Int?
 pub fn AdditionalLayerInfo::as_legacy_effects(Self) -> LegacyEffects?
+pub fn AdditionalLayerInfo::as_mask_as_global(Self) -> Bool?
 pub fn AdditionalLayerInfo::as_metadata_setting(Self) -> Array[MetadataItem]?
 pub fn AdditionalLayerInfo::as_object_effects(Self) -> (Int, @descriptor.Descriptor)?
 pub fn AdditionalLayerInfo::as_placed_layer(Self) -> (Int, @descriptor.Descriptor)?
@@ -47,6 +49,7 @@ pub fn AdditionalLayerInfo::as_text_engine_data(Self) -> Bytes?
 pub fn AdditionalLayerInfo::as_transparency_shapes_layer(Self) -> Bool?
 pub fn AdditionalLayerInfo::as_type_tool(Self) -> TypeToolInfo?
 pub fn AdditionalLayerInfo::as_unicode_name(Self) -> String?
+pub fn AdditionalLayerInfo::as_user_mask(Self) -> UserMask?
 pub fn AdditionalLayerInfo::as_vector_mask(Self) -> VectorMask?
 pub fn AdditionalLayerInfo::as_vector_origination(Self) -> (Int, @descriptor.Descriptor)?
 pub fn AdditionalLayerInfo::as_vector_stroke_content(Self) -> (Bytes, Int, @descriptor.Descriptor)?
@@ -55,6 +58,7 @@ pub fn AdditionalLayerInfo::build(Self, @binary.Writer, @types.PsdVersion) -> Un
 pub fn AdditionalLayerInfo::from_adjustment_descriptor(Bytes, Int, @descriptor.Descriptor) -> Self
 pub fn AdditionalLayerInfo::from_annotations(AnnotationsData) -> Self
 pub fn AdditionalLayerInfo::from_blend_clipping(Bool) -> Self
+pub fn AdditionalLayerInfo::from_blending_restrictions(Array[Int]) -> Self
 pub fn AdditionalLayerInfo::from_compositor_used(Int, @descriptor.Descriptor) -> Self
 pub fn AdditionalLayerInfo::from_fill_opacity(Int) -> Self
 pub fn AdditionalLayerInfo::from_filter_mask(FilterMask) -> Self
@@ -62,6 +66,7 @@ pub fn AdditionalLayerInfo::from_gradient_map(GradientMapData) -> Self
 pub fn AdditionalLayerInfo::from_interior_blend(Bool) -> Self
 pub fn AdditionalLayerInfo::from_knockout(Bool) -> Self
 pub fn AdditionalLayerInfo::from_layer_id(Int) -> Self
+pub fn AdditionalLayerInfo::from_layer_mask_as_global(Bool) -> Self
 pub fn AdditionalLayerInfo::from_layer_name_source(Bytes) -> Self
 pub fn AdditionalLayerInfo::from_layer_version(Int) -> Self
 pub fn AdditionalLayerInfo::from_legacy_effects(LegacyEffects) -> Self
@@ -75,7 +80,9 @@ pub fn AdditionalLayerInfo::from_sheet_color(Array[Int]) -> Self
 pub fn AdditionalLayerInfo::from_text_engine_data(Bytes) -> Self
 pub fn AdditionalLayerInfo::from_transparency_shapes_layer(Bool) -> Self
 pub fn AdditionalLayerInfo::from_type_tool(TypeToolInfo) -> Self
+pub fn AdditionalLayerInfo::from_user_mask(UserMask) -> Self
 pub fn AdditionalLayerInfo::from_vector_mask(Bytes, VectorMask) -> Self
+pub fn AdditionalLayerInfo::from_vector_mask_as_global(Bool) -> Self
 pub fn AdditionalLayerInfo::from_vector_origination(Int, @descriptor.Descriptor) -> Self
 pub fn AdditionalLayerInfo::from_vector_stroke_content(Bytes, Int, @descriptor.Descriptor) -> Self
 pub fn AdditionalLayerInfo::from_vector_stroke_data(Int, @descriptor.Descriptor) -> Self
@@ -277,6 +284,15 @@ pub(all) struct TypeToolInfo {
 }
 pub impl Eq for TypeToolInfo
 pub impl Show for TypeToolInfo
+
+pub(all) struct UserMask {
+  color_space : Int
+  color_components : Array[Int]
+  opacity : Int
+  flag : Int
+}
+pub impl Eq for UserMask
+pub impl Show for UserMask
 
 pub(all) struct VectorMask {
   version : Int

@@ -1,4 +1,24 @@
+// Image Resources: Thumbnail
+//
+// PSD File Format Specification, "Image Resources" section.
+
 ///|
+/// Thumbnail Resource (ID 1036).
+///
+/// Spec: "0x040C (Photoshop 5.0)"
+///   "Thumbnail resource (supersedes resource 1033). See See Thumbnail
+///    resource format."
+///   | Length | Description                                  |
+///   |--------|----------------------------------------------|
+///   | 4      | Format (1 = kJpegRGB, 0 = kRawRGB)          |
+///   | 4      | Width of thumbnail in pixels                 |
+///   | 4      | Height of thumbnail in pixels                |
+///   | 4      | Widthbytes: padded row bytes = (width * bpp + 31) / 32 * 4 |
+///   | 4      | Total size = widthbytes * height * planes    |
+///   | 4      | Size after compression (for consistency check) |
+///   | 2      | Bits per pixel (= 24)                        |
+///   | 2      | Number of planes (= 1)                       |
+///   | var    | JFIF data (format 1) or raw RGB (format 0)   |
 pub(all) struct ThumbnailResource {
   format : Int
   width : Int
@@ -12,7 +32,6 @@ pub(all) struct ThumbnailResource {
 } derive(Eq, Show)
 
 ///|
-/// Parse a thumbnail resource from an ImageResourceBlock (ID 1036).
 pub fn ImageResourceBlock::as_thumbnail(
   self : ImageResourceBlock,
 ) -> ThumbnailResource? {
@@ -63,7 +82,6 @@ pub fn ThumbnailResource::is_raw_rgb(self : ThumbnailResource) -> Bool {
 }
 
 ///|
-/// Create a thumbnail resource block from a ThumbnailResource.
 pub fn ImageResourceBlock::from_thumbnail(
   thumb : ThumbnailResource,
 ) -> ImageResourceBlock {

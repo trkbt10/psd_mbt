@@ -1,5 +1,14 @@
+// Image Resources: Core property accessors
+//
+// PSD File Format Specification, "Image Resources" section.
+
 ///|
-/// Return the data as an ICC color profile (raw bytes) if resource_id == 1039.
+/// ICC Profile (ID 1039).
+///
+/// Spec: "0x040F (Photoshop 4.0)"
+///   "ICC Profile. The raw bytes of an ICC (International Color Consortium)
+///    format profile. See ICC1v42_2006-05.pdf in the Documentation folder
+///    and icProfileHeader.h in Sample Code\Common\Includes."
 pub fn ImageResourceBlock::as_icc_profile(self : ImageResourceBlock) -> Bytes? {
   if self.resource_id == 1039 {
     Some(self.data)
@@ -9,7 +18,10 @@ pub fn ImageResourceBlock::as_icc_profile(self : ImageResourceBlock) -> Bytes? {
 }
 
 ///|
-/// Return the data as an XMP metadata string if resource_id == 1060.
+/// XMP Metadata (ID 1060).
+///
+/// Spec: "0x0424 (Photoshop CS)"
+///   "XMP metadata. File info. See documentation from Adobe XMP."
 pub fn ImageResourceBlock::as_xmp(self : ImageResourceBlock) -> String? {
   if self.resource_id == 1060 {
     let buf = @buffer.new(size_hint=self.data.length())
@@ -23,7 +35,6 @@ pub fn ImageResourceBlock::as_xmp(self : ImageResourceBlock) -> String? {
 }
 
 ///|
-/// Create an XMP metadata resource block.
 pub fn ImageResourceBlock::from_xmp(xmp : String) -> ImageResourceBlock {
   let buf = @buffer.new(size_hint=xmp.length())
   for i = 0; i < xmp.length(); i = i + 1 {
@@ -33,7 +44,12 @@ pub fn ImageResourceBlock::from_xmp(xmp : String) -> ImageResourceBlock {
 }
 
 ///|
-/// Return the global angle (Int32) if resource_id == 1037.
+/// Global Angle (ID 1037).
+///
+/// Spec: "0x040D (Photoshop 4.0)"
+///   "Global Angle. 4 bytes that contain an integer between 0 and 359,
+///    which is the global lighting angle for effects layer. If not present,
+///    assumed to be 30."
 pub fn ImageResourceBlock::as_global_angle(self : ImageResourceBlock) -> Int? {
   if self.resource_id == 1037 && self.data.length() >= 4 {
     let reader = @binary.Reader::new(self.data)
@@ -46,7 +62,6 @@ pub fn ImageResourceBlock::as_global_angle(self : ImageResourceBlock) -> Int? {
 }
 
 ///|
-/// Create a Global Angle resource block.
 pub fn ImageResourceBlock::from_global_angle(angle : Int) -> ImageResourceBlock {
   let w = @binary.Writer::new()
   w.write_i32_be(angle)
@@ -54,7 +69,10 @@ pub fn ImageResourceBlock::from_global_angle(angle : Int) -> ImageResourceBlock 
 }
 
 ///|
-/// Return the global altitude (Int32) if resource_id == 1049.
+/// Global Altitude (ID 1049).
+///
+/// Spec: "0x0419 (Photoshop 6.0)"
+///   "Global Altitude. 4 byte entry for altitude."
 pub fn ImageResourceBlock::as_global_altitude(
   self : ImageResourceBlock,
 ) -> Int? {
@@ -69,7 +87,6 @@ pub fn ImageResourceBlock::as_global_altitude(
 }
 
 ///|
-/// Create a Global Altitude resource block.
 pub fn ImageResourceBlock::from_global_altitude(
   altitude : Int,
 ) -> ImageResourceBlock {
@@ -79,7 +96,11 @@ pub fn ImageResourceBlock::from_global_altitude(
 }
 
 ///|
-/// Return the transparency index (UInt16) if resource_id == 1047.
+/// Transparency Index (ID 1047).
+///
+/// Spec: "0x0417 (Photoshop 6.0)"
+///   "Transparency Index. 2 bytes for the index of transparent color,
+///    if any."
 pub fn ImageResourceBlock::as_transparency_index(
   self : ImageResourceBlock,
 ) -> Int? {
@@ -94,7 +115,6 @@ pub fn ImageResourceBlock::as_transparency_index(
 }
 
 ///|
-/// Create a Transparency Index resource block.
 pub fn ImageResourceBlock::from_transparency_index(
   index : Int,
 ) -> ImageResourceBlock {

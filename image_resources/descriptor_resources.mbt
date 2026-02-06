@@ -1,7 +1,11 @@
+// Image Resources: Descriptor-based resources
+//
+// PSD File Format Specification, "Image Resources" section.
+// These resources store a version(4) followed by a Descriptor structure.
+
 ///|
 /// Parse a Descriptor-based image resource.
-/// Many modern PSD resources (Slices, LayerComps, etc.) store a version(4)
-/// followed by a Descriptor.
+/// Many modern PSD resources store a version(4) followed by a Descriptor.
 fn parse_versioned_descriptor(data : Bytes) -> (Int, @descriptor.Descriptor)? {
   if data.length() < 8 {
     return None
@@ -29,8 +33,11 @@ fn build_versioned_descriptor(
 }
 
 ///|
-/// Slices (ID 1050) - version 7-8 uses Descriptor.
-/// For version >= 6, returns (version, Descriptor).
+/// Slices (ID 1050).
+///
+/// Spec: "0x041A (Photoshop 6.0)"
+///   "Slices. See See Slices resource format."
+///   For version 7-8 (Photoshop CS2+), data is version(4) + Descriptor.
 pub fn ImageResourceBlock::as_slices_descriptor(
   self : ImageResourceBlock,
 ) -> (Int, @descriptor.Descriptor)? {
@@ -53,7 +60,11 @@ pub fn ImageResourceBlock::from_slices_descriptor(
 }
 
 ///|
-/// LayerComps (ID 1065) - Descriptor.
+/// Layer Comps (ID 1065).
+///
+/// Spec: "0x0429 (Photoshop CS)"
+///   "Layer Comps. 4 bytes (descriptor version = 16),
+///    Descriptor (see See Descriptor structure)."
 pub fn ImageResourceBlock::as_layer_comps(
   self : ImageResourceBlock,
 ) -> (Int, @descriptor.Descriptor)? {
@@ -76,7 +87,11 @@ pub fn ImageResourceBlock::from_layer_comps(
 }
 
 ///|
-/// TimelineInfo (ID 1075) - Descriptor.
+/// Timeline Info (ID 1075).
+///
+/// Spec: "0x0433 (Photoshop CS3)"
+///   "Timeline Information. 4 bytes (descriptor version = 16),
+///    Descriptor (see See Descriptor structure)."
 pub fn ImageResourceBlock::as_timeline_info(
   self : ImageResourceBlock,
 ) -> (Int, @descriptor.Descriptor)? {
@@ -99,7 +114,11 @@ pub fn ImageResourceBlock::from_timeline_info(
 }
 
 ///|
-/// SheetDisclosure (ID 1076) - Descriptor.
+/// Sheet Disclosure (ID 1076).
+///
+/// Spec: "0x0434 (Photoshop CS3)"
+///   "Sheet Disclosure. 4 bytes (descriptor version = 16),
+///    Descriptor (see See Descriptor structure)."
 pub fn ImageResourceBlock::as_sheet_disclosure(
   self : ImageResourceBlock,
 ) -> (Int, @descriptor.Descriptor)? {
@@ -122,7 +141,11 @@ pub fn ImageResourceBlock::from_sheet_disclosure(
 }
 
 ///|
-/// PixelSourceData2 (ID 1077) - Descriptor.
+/// Pixel Source Data #2 (ID 1077).
+///
+/// Spec: "0x0435 (Photoshop CS3)"
+///   "DisplayInfo structure to support floating point colors. Also
+///    see ID 1007. See Appendix A in Photoshop API Guide.pdf."
 pub fn ImageResourceBlock::as_pixel_source_data(
   self : ImageResourceBlock,
 ) -> (Int, @descriptor.Descriptor)? {
@@ -145,7 +168,11 @@ pub fn ImageResourceBlock::from_pixel_source_data(
 }
 
 ///|
-/// DisplayInfo (ID 1078) - Descriptor (PS7+).
+/// Display Info (ID 1078).
+///
+/// Spec: "0x0436 (Photoshop CS3)"
+///   "Onion Skins. 4 bytes (descriptor version = 16),
+///    Descriptor (see See Descriptor structure)."
 pub fn ImageResourceBlock::as_display_info(
   self : ImageResourceBlock,
 ) -> (Int, @descriptor.Descriptor)? {
@@ -168,7 +195,11 @@ pub fn ImageResourceBlock::from_display_info(
 }
 
 ///|
-/// ColorSamplers (ID 1080) - Descriptor (PS CS3+).
+/// Color Samplers Resource (ID 1080).
+///
+/// Spec: "0x0438 (Photoshop CS3)"
+///   "Color Samplers Resource. Also see ID 1038 for old format.
+///    See See Color samplers resource format."
 pub fn ImageResourceBlock::as_color_samplers(
   self : ImageResourceBlock,
 ) -> (Int, @descriptor.Descriptor)? {
@@ -191,7 +222,11 @@ pub fn ImageResourceBlock::from_color_samplers(
 }
 
 ///|
-/// MeasurementScale (ID 1082) - Descriptor.
+/// Measurement Scale (ID 1082).
+///
+/// Spec: "0x043A (Photoshop CS3)"
+///   "Measurement Scale. 4 bytes (descriptor version = 16),
+///    Descriptor (see See Descriptor structure)."
 pub fn ImageResourceBlock::as_measurement_scale(
   self : ImageResourceBlock,
 ) -> (Int, @descriptor.Descriptor)? {
@@ -214,7 +249,11 @@ pub fn ImageResourceBlock::from_measurement_scale(
 }
 
 ///|
-/// Timeline (ID 1083) - Descriptor.
+/// Timeline (ID 1083).
+///
+/// Spec: "0x043B (Photoshop CS3)"
+///   "Timeline. 4 bytes (descriptor version = 16),
+///    Descriptor (see See Descriptor structure)."
 pub fn ImageResourceBlock::as_timeline(
   self : ImageResourceBlock,
 ) -> (Int, @descriptor.Descriptor)? {
@@ -237,7 +276,11 @@ pub fn ImageResourceBlock::from_timeline(
 }
 
 ///|
-/// CountInfo (ID 1088) - Descriptor.
+/// Count Information (ID 1088).
+///
+/// Spec: "0x0440 (Photoshop CS4)"
+///   "Count Information. 4 bytes (descriptor version = 16),
+///    Descriptor (see See Descriptor structure)."
 pub fn ImageResourceBlock::as_count_info(
   self : ImageResourceBlock,
 ) -> (Int, @descriptor.Descriptor)? {

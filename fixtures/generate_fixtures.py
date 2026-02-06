@@ -958,6 +958,112 @@ def generate_phase15_effects():
     print(f"Generated {output} ({len(buf)} bytes)")
 
 
+def generate_gap_ali_keys():
+    """Generate 4x4 RGB with 1 layer containing LMsk, brst, lmgm, vmgm ALI keys,
+    plus Layer Selection IDs (resource 1069) and Document IDs Seed (resource 1043)."""
+    width, height, channels = 4, 4, 3
+    pixel_bytes = width * height  # 16
+
+    buf = bytearray()
+    buf += make_header(channels=channels, height=height, width=width)
+    buf += struct.pack(">I", 0)  # Color Mode Data
+
+    # Image Resources: LayerSelectionIDs (1069) + DocumentIdsSeed (1043)
+    res_buf = bytearray()
+
+    # Resource 1043: Document IDs Seed (UInt32)
+    res_buf += b"8BIM"
+    res_buf += struct.pack(">H", 1043)
+    res_buf += b"\x00\x00"  # empty Pascal string
+    seed_data = struct.pack(">I", 42)
+    res_buf += struct.pack(">I", len(seed_data))
+    res_buf += seed_data
+
+    # Resource 1069: Layer Selection IDs (count + array of UInt32)
+    res_buf += b"8BIM"
+    res_buf += struct.pack(">H", 1069)
+    res_buf += b"\x00\x00"  # empty Pascal string
+    sel_data = bytearray()
+    sel_data += struct.pack(">H", 2)   # count = 2
+    sel_data += struct.pack(">I", 1)   # layer ID 1
+    sel_data += struct.pack(">I", 2)   # layer ID 2
+    res_buf += struct.pack(">I", len(sel_data))
+    res_buf += sel_data
+
+    buf += struct.pack(">I", len(res_buf))
+    buf += res_buf
+
+    # Layer and Mask Information
+    lm_buf = bytearray()
+    li_buf = bytearray()
+    li_buf += struct.pack(">h", 1)  # Layer count = 1
+
+    # Build ALI blocks for the layer
+    ali = bytearray()
+
+    # LMsk (User Mask): color_space(2) + 4xUInt16(8) + opacity(2) + flag(1) = 13 bytes
+    lmsk_data = bytearray()
+    lmsk_data += struct.pack(">H", 0)            # color space = 0
+    lmsk_data += struct.pack(">HHHH", 65535, 0, 0, 0)  # color components (red)
+    lmsk_data += struct.pack(">H", 100)          # opacity = 100
+    lmsk_data += struct.pack("B", 128)           # flag = 128
+    ali += make_ali_block(b"LMsk", bytes(lmsk_data))
+
+    # brst (Channel Blending Restrictions): array of UInt32
+    brst_data = bytearray()
+    brst_data += struct.pack(">I", 0)  # channel 0 (Red)
+    brst_data += struct.pack(">I", 2)  # channel 2 (Blue)
+    ali += make_ali_block(b"brst", bytes(brst_data))
+
+    # lmgm (Layer Mask as Global Mask): 1 byte + 3 padding
+    lmgm_data = struct.pack("B", 1) + b"\x00\x00\x00"
+    ali += make_ali_block(b"lmgm", bytes(lmgm_data))
+
+    # vmgm (Vector Mask as Global Mask): 1 byte + 3 padding
+    vmgm_data = struct.pack("B", 0) + b"\x00\x00\x00"
+    ali += make_ali_block(b"vmgm", bytes(vmgm_data))
+
+    # Channel data
+    ch_data = []
+    for ch_id in range(channels):
+        if ch_id == 0:
+            raw = b"\xFF" * pixel_bytes  # R = 255
+        else:
+            raw = b"\x00" * pixel_bytes
+        ch_buf = struct.pack(">H", 0) + raw  # compression = Raw + data
+        ch_data.append(ch_buf)
+
+    lr = build_layer_record_with_ali_and_mask(
+        0, 0, height, width, [0, 1, 2], b"norm", 255, 0x02, "Layer 0",
+        [len(d) for d in ch_data], ali_data=bytes(ali),
+    )
+    li_buf += lr
+
+    for d in ch_data:
+        li_buf += d
+
+    li_length = len(li_buf)
+    if li_length % 2 != 0:
+        li_buf += b"\x00"
+        li_length += 1
+
+    lm_buf += struct.pack(">I", li_length)
+    lm_buf += li_buf
+    lm_buf += struct.pack(">I", 0)  # Global Layer Mask Info
+
+    buf += struct.pack(">I", len(lm_buf))
+    buf += lm_buf
+
+    buf += struct.pack(">H", 0)  # Compression = Raw
+    buf += b"\xFF" * pixel_bytes  # R
+    buf += b"\x00" * pixel_bytes  # G
+    buf += b"\x00" * pixel_bytes  # B
+
+    output = FIXTURES_DIR / "gap_ali_keys.psd"
+    output.write_bytes(bytes(buf))
+    print(f"Generated {output} ({len(buf)} bytes)")
+
+
 if __name__ == "__main__":
     generate_phase0_minimal()
     generate_phase1_rle()
@@ -971,4 +1077,5 @@ if __name__ == "__main__":
     generate_phase10_resources()
     generate_phase13_path()
     generate_phase15_effects()
+    generate_gap_ali_keys()
     print("All fixtures generated.")

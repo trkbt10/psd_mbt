@@ -1,5 +1,19 @@
+// Additional Layer Information: Type Tool key
+//
+// PSD File Format Specification, "Additional Layer Information" section.
+
 ///|
-/// Type Tool (key 'TySh', PS6+) - transform matrix + Descriptor.
+/// Type Tool Object Setting (key 'TySh').
+///
+/// Spec: "Key is 'TySh'. (Photoshop 6.0)"
+///   "Type tool object setting (Photoshop 6.0). See See Type tool object setting."
+///   | Length | Description                                 |
+///   |--------|---------------------------------------------|
+///   | 2      | Version (= 1)                              |
+///   | 48     | Transform: xx, xy, yx, yy, tx, ty (6 doubles) |
+///   | 2      | Text version (= 50 for PS 6.0)             |
+///   | 4      | Descriptor version (= 16 for PS 6.0)       |
+///   | var    | Text data (Descriptor)                      |
 pub(all) struct TypeToolInfo {
   version : Int
   transform : Array[Double] // 6 doubles: xx, xy, yx, yy, tx, ty

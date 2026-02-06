@@ -1,11 +1,42 @@
+// Image Resources: Path Resources
+//
+// PSD File Format Specification, "Image Resources" section.
+//
+// Spec: "0x07D0-0x0BB6 (Photoshop 2.0)"
+//   "Path Information (saved paths). See See Path resource format."
+//   Resource IDs 2000-2997: Named paths (name is stored in resource name field).
+//   Resource ID 2999: Name of clipping path.
+//
+// Path resource format:
+//   Each path resource consists of a series of 26-byte path records.
+//   | Length | Description            |
+//   |--------|------------------------|
+//   | 2      | Record type            |
+//   | 24     | Record data            |
+//
+//   Record types:
+//   | Type | Description                          |
+//   |------|--------------------------------------|
+//   | 0    | Closed subpath length record         |
+//   | 1    | Closed subpath Bezier knot, linked    |
+//   | 2    | Closed subpath Bezier knot, unlinked  |
+//   | 3    | Open subpath length record            |
+//   | 4    | Open subpath Bezier knot, linked      |
+//   | 5    | Open subpath Bezier knot, unlinked    |
+//   | 6    | Path fill rule record                |
+//   | 7    | Clipboard record                     |
+//   | 8    | Initial fill rule record              |
+
 ///|
-/// Path Resource (Image Resource IDs 2000-2997, 2999).
 pub(all) struct PathResource {
   records : Array[PathRecord]
 } derive(Eq, Show)
 
 ///|
 /// Each path record is 26 bytes: 2 bytes type + 24 bytes data.
+///
+/// Bezier knot records contain 3 control points (preceding, anchor, leaving),
+/// each as a pair of fixed-point 8.24 values (vertical, horizontal).
 pub(all) enum PathRecord {
   ClosedSubpathLength(Int) // type 0
   ClosedSubpathBezierKnotLinked(BezierKnot) // type 1
@@ -20,7 +51,7 @@ pub(all) enum PathRecord {
 
 ///|
 /// Bezier knot: 3 points (control_preceding, anchor, control_leaving).
-/// Each point is a pair of fixed-point 8.24 values.
+/// Each point is a pair of fixed-point 8.24 values (vertical, horizontal).
 pub(all) struct BezierKnot {
   control_preceding : (Double, Double)
   anchor : (Double, Double)
@@ -28,7 +59,7 @@ pub(all) struct BezierKnot {
 } derive(Eq, Show)
 
 ///|
-/// Clipboard record in a path.
+/// Clipboard record: bounding box + resolution.
 pub(all) struct ClipboardRecord {
   top : Double
   left : Double

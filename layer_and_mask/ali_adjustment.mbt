@@ -1,7 +1,32 @@
-///|
-/// All adjustment layer ALI keys share a common pattern:
-/// version(4) + Descriptor.
-/// This provides a generic accessor for any descriptor-based adjustment key.
+// Additional Layer Information: Adjustment Layer keys
+//
+// PSD File Format Specification, "Additional Layer Information" section.
+// All adjustment layer keys share a common pattern: version(4) + Descriptor.
+//
+// Spec: "The following resources have a version number of 4 bytes
+//   followed by a Descriptor (See See Descriptor structure)."
+//
+// Known adjustment layer keys:
+//   | Key    | Name                    | Photoshop Version |
+//   |--------|-------------------------|-------------------|
+//   | 'SoCo' | Solid Color sheet       | Photoshop 6.0     |
+//   | 'GdFl' | Gradient fill setting   | Photoshop 6.0     |
+//   | 'PtFl' | Pattern fill setting    | Photoshop 6.0     |
+//   | 'levl' | Levels                  | Photoshop CS      |
+//   | 'curv' | Curves                  | Photoshop CS      |
+//   | 'expA' | Exposure                | Photoshop CS2     |
+//   | 'vibA' | Vibrance                | Photoshop CS3     |
+//   | 'hue2' | Hue/Saturation (new)    | Photoshop CS      |
+//   | 'blnc' | Color Balance           | Photoshop CS      |
+//   | 'blwh' | Black and White         | Photoshop CS3     |
+//   | 'phfl' | Photo Filter            | Photoshop CS      |
+//   | 'mixr' | Channel Mixer           | Photoshop CS      |
+//   | 'CgEd' | Content Generator Extra | Photoshop CC      |
+//   | 'nvrt' | Invert                  | Photoshop CS      |
+//   | 'post' | Posterize               | Photoshop CS      |
+//   | 'thrs' | Threshold               | Photoshop CS      |
+//   | 'selc' | Selective Color         | Photoshop CS      |
+//   | 'brit' | Brightness/Contrast     | Photoshop CS3     |
 
 ///|
 /// Known adjustment layer keys.
@@ -39,7 +64,8 @@ pub fn is_adjustment_key(key : Bytes) -> Bool {
 
 ///|
 /// Parse an adjustment layer descriptor.
-/// Common pattern: version(4) + Descriptor.
+///
+/// Common pattern for all adjustment keys: version(4) + Descriptor.
 pub fn AdditionalLayerInfo::as_adjustment_descriptor(
   self : AdditionalLayerInfo,
 ) -> (Int, @descriptor.Descriptor)? {

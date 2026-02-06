@@ -1,6 +1,20 @@
+// Image Resources: Resolution Info
+//
+// PSD File Format Specification, "Image Resources" section.
+
 ///|
-/// ResolutionInfo (ID 1005) - 16 bytes.
-/// Contains horizontal and vertical resolution information.
+/// Resolution Info (ID 1005).
+///
+/// Spec: "0x03ED (Photoshop 2.5)"
+///   "ResolutionInfo structure. See Appendix A in Photoshop API Guide.pdf."
+///   | Length | Description                            |
+///   |--------|----------------------------------------|
+///   | 4      | Horizontal resolution (fixed-point 16.16) |
+///   | 2      | HResUnit (1 = pixels/inch, 2 = pixels/cm) |
+///   | 2      | WidthUnit (1=in, 2=cm, 3=pt, 4=picas, 5=columns) |
+///   | 4      | Vertical resolution (fixed-point 16.16)   |
+///   | 2      | VResUnit (1 = pixels/inch, 2 = pixels/cm) |
+///   | 2      | HeightUnit (1=in, 2=cm, 3=pt, 4=picas, 5=columns) |
 pub(all) struct ResolutionInfo {
   h_res : Int // Horizontal resolution fixed-point 16.16
   h_res_unit : Int // 1 = pixels/inch, 2 = pixels/cm
@@ -11,7 +25,6 @@ pub(all) struct ResolutionInfo {
 } derive(Eq, Show)
 
 ///|
-/// Parse ResolutionInfo from an ImageResourceBlock (ID 1005).
 pub fn ImageResourceBlock::as_resolution_info(
   self : ImageResourceBlock,
 ) -> ResolutionInfo? {
@@ -33,7 +46,6 @@ pub fn ImageResourceBlock::as_resolution_info(
 }
 
 ///|
-/// Create a ResolutionInfo resource block.
 pub fn ImageResourceBlock::from_resolution_info(
   info : ResolutionInfo,
 ) -> ImageResourceBlock {

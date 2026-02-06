@@ -1,5 +1,15 @@
+// Additional Layer Information: Simple property accessors
+//
+// PSD File Format Specification, "Additional Layer Information" section.
+// These are simple fixed-size or boolean-typed keys.
+
 ///|
-/// Layer ID (key 'lyid') - UInt32.
+/// Layer ID (key 'lyid').
+///
+/// Spec: "Key is 'lyid'. (Photoshop 5.0)"
+///   | Length | Description           |
+///   |--------|-------------------------------|
+///   | 4      | ID                            |
 pub fn AdditionalLayerInfo::as_layer_id(self : AdditionalLayerInfo) -> Int? {
   if self.key != b"lyid" || self.data.length() < 4 {
     return None
@@ -18,7 +28,13 @@ pub fn AdditionalLayerInfo::from_layer_id(id : Int) -> AdditionalLayerInfo {
 }
 
 ///|
-/// Blend Clipping (key 'clbl') - 1 byte bool.
+/// Blend Clipping Elements (key 'clbl').
+///
+/// Spec: "Key is 'clbl'. (Photoshop 6.0)"
+///   | Length | Description                                |
+///   |--------|--------------------------------------------|
+///   | 1      | Blend clipped elements (boolean)            |
+///   | 3      | Padding                                    |
 pub fn AdditionalLayerInfo::as_blend_clipping(
   self : AdditionalLayerInfo,
 ) -> Bool? {
@@ -46,7 +62,13 @@ pub fn AdditionalLayerInfo::from_blend_clipping(
 }
 
 ///|
-/// Interior Blend (key 'infx') - 1 byte bool.
+/// Blend Interior Elements (key 'infx').
+///
+/// Spec: "Key is 'infx'. (Photoshop 6.0)"
+///   | Length | Description                                 |
+///   |--------|---------------------------------------------|
+///   | 1      | Blend interior elements (boolean)            |
+///   | 3      | Padding                                     |
 pub fn AdditionalLayerInfo::as_interior_blend(
   self : AdditionalLayerInfo,
 ) -> Bool? {
@@ -74,7 +96,13 @@ pub fn AdditionalLayerInfo::from_interior_blend(
 }
 
 ///|
-/// Knockout (key 'knko') - 1 byte bool.
+/// Knockout Setting (key 'knko').
+///
+/// Spec: "Key is 'knko'. (Photoshop 6.0)"
+///   | Length | Description       |
+///   |--------|-------------------|
+///   | 1      | Knockout (boolean) |
+///   | 3      | Padding           |
 pub fn AdditionalLayerInfo::as_knockout(self : AdditionalLayerInfo) -> Bool? {
   if self.key != b"knko" || self.data.length() < 1 {
     return None
@@ -98,7 +126,12 @@ pub fn AdditionalLayerInfo::from_knockout(value : Bool) -> AdditionalLayerInfo {
 }
 
 ///|
-/// Protection Settings (key 'lspf') - UInt32 bit flags.
+/// Protected Setting (key 'lspf').
+///
+/// Spec: "Key is 'lspf'. (Photoshop 6.0)"
+///   | Length | Description                                                |
+///   |--------|--------------------------------------------------------------|
+///   | 4      | Protection flags (bit 0 = transparency, bit 1 = composite, bit 2 = position) |
 pub fn AdditionalLayerInfo::as_protection_settings(
   self : AdditionalLayerInfo,
 ) -> Int? {
@@ -121,7 +154,12 @@ pub fn AdditionalLayerInfo::from_protection_settings(
 }
 
 ///|
-/// Sheet Color (key 'lclr') - 8 bytes (4x UInt16 color).
+/// Sheet Color Setting (key 'lclr').
+///
+/// Spec: "Key is 'lclr'. (Photoshop 6.0)"
+///   | Length | Description      |
+///   |--------|------------------|
+///   | 8      | Color (4 x 2 byte values) |
 pub fn AdditionalLayerInfo::as_sheet_color(
   self : AdditionalLayerInfo,
 ) -> Array[Int]? {
@@ -153,7 +191,12 @@ pub fn AdditionalLayerInfo::from_sheet_color(
 }
 
 ///|
-/// Reference Point (key 'fxrp') - 2x Float64 (16 bytes).
+/// Reference Point (key 'fxrp').
+///
+/// Spec: "Key is 'fxrp'. (Photoshop 6.0)"
+///   | Length | Description       |
+///   |--------|-------------------|
+///   | 16     | 2 double values for the reference point |
 pub fn AdditionalLayerInfo::as_reference_point(
   self : AdditionalLayerInfo,
 ) -> (Double, Double)? {
@@ -182,7 +225,12 @@ pub fn AdditionalLayerInfo::from_reference_point(
 }
 
 ///|
-/// Layer Name Source (key 'lnsr') - 4 bytes ID.
+/// Layer Name Source Setting (key 'lnsr').
+///
+/// Spec: "Key is 'lnsr'. (Photoshop 6.0)"
+///   | Length | Description |
+///   |--------|-------------|
+///   | 4      | ID for the layer name source |
 pub fn AdditionalLayerInfo::as_layer_name_source(
   self : AdditionalLayerInfo,
 ) -> Bytes? {
@@ -203,7 +251,12 @@ pub fn AdditionalLayerInfo::from_layer_name_source(
 }
 
 ///|
-/// Layer Version (key 'lyvr') - UInt32 (typically = 70).
+/// Layer Version (key 'lyvr').
+///
+/// Spec: "Key is 'lyvr'. (Photoshop 7.0)"
+///   | Length | Description                   |
+///   |--------|-------------------------------|
+///   | 4      | Version (= 70 for Photoshop 7.0) |
 pub fn AdditionalLayerInfo::as_layer_version(
   self : AdditionalLayerInfo,
 ) -> Int? {
@@ -226,7 +279,13 @@ pub fn AdditionalLayerInfo::from_layer_version(
 }
 
 ///|
-/// Transparency Shapes Layer (key 'tsly') - 1 byte.
+/// Transparency Shapes Layer (key 'tsly').
+///
+/// Spec: "Key is 'tsly'. (Photoshop 7.0)"
+///   | Length | Description                           |
+///   |--------|---------------------------------------|
+///   | 1      | Transparency shapes layer (boolean)    |
+///   | 3      | Padding                               |
 pub fn AdditionalLayerInfo::as_transparency_shapes_layer(
   self : AdditionalLayerInfo,
 ) -> Bool? {
@@ -254,7 +313,12 @@ pub fn AdditionalLayerInfo::from_transparency_shapes_layer(
 }
 
 ///|
-/// Fill Opacity (key 'iOpa') - 1 byte (0-255).
+/// Fill Opacity (key 'iOpa').
+///
+/// Spec: "Key is 'iOpa'. (Photoshop 7.0)"
+///   | Length | Description                |
+///   |--------|----------------------------|
+///   | 1      | Fill Opacity (0..255)       |
 pub fn AdditionalLayerInfo::as_fill_opacity(self : AdditionalLayerInfo) -> Int? {
   if self.key != b"iOpa" || self.data.length() < 1 {
     return None
@@ -268,4 +332,87 @@ pub fn AdditionalLayerInfo::from_fill_opacity(
 ) -> AdditionalLayerInfo {
   let data = Bytes::from_array([opacity.to_byte(), b'\x00', b'\x00', b'\x00'])
   { signature: b"\x38\x42\x49\x4D", key: b"iOpa", data }
+}
+
+///|
+/// Channel Blending Restrictions Setting (key 'brst').
+///
+/// Spec: "Key is 'brst'. (Photoshop 6.0)"
+///   | Length | Description                                    |
+///   |--------|------------------------------------------------|
+///   | var    | Following is repeated length / 4 times:        |
+///   | 4      | Channel number that is restricted              |
+pub fn AdditionalLayerInfo::as_blending_restrictions(
+  self : AdditionalLayerInfo,
+) -> Array[Int]? {
+  if self.key != b"brst" {
+    return None
+  }
+  let reader = @binary.Reader::new(self.data)
+  let channels : Array[Int] = []
+  try {
+    while reader.remaining() >= 4 {
+      channels.push(reader.read_u32_be().reinterpret_as_int())
+    }
+  } catch {
+    _ => ()
+  }
+  Some(channels)
+}
+
+///|
+pub fn AdditionalLayerInfo::from_blending_restrictions(
+  channels : Array[Int],
+) -> AdditionalLayerInfo {
+  let w = @binary.Writer::new()
+  for i = 0; i < channels.length(); i = i + 1 {
+    w.write_u32_be(channels[i].reinterpret_as_uint())
+  }
+  { signature: b"\x38\x42\x49\x4D", key: b"brst", data: w.to_bytes() }
+}
+
+///|
+/// Layer Mask as Global Mask (key 'lmgm') / Vector Mask as Global Mask (key 'vmgm').
+///
+/// Spec (lmgm): "Key is 'lmgm'. (Photoshop CS6)"
+///   | Length | Description                                          |
+///   |--------|------------------------------------------------------|
+///   | 1      | 1: the layer mask is used in a final crossfade       |
+///   |        | masking the layer and effects rather than being used  |
+///   |        | to shape the layer and its effects.                   |
+///
+/// Spec (vmgm): "Key is 'vmgm'. Same as Layer mask as global mask,
+///   but applying the vector mask."
+pub fn AdditionalLayerInfo::as_mask_as_global(
+  self : AdditionalLayerInfo,
+) -> Bool? {
+  if self.key != b"lmgm" && self.key != b"vmgm" {
+    return None
+  }
+  if self.data.length() < 1 {
+    return None
+  }
+  Some(self.data[0] != b'\x00')
+}
+
+///|
+/// Create Layer Mask as Global Mask ALI block (key 'lmgm').
+pub fn AdditionalLayerInfo::from_layer_mask_as_global(
+  flag : Bool,
+) -> AdditionalLayerInfo {
+  let w = @binary.Writer::new()
+  w.write_u8(if flag { b'\x01' } else { b'\x00' })
+  w.write_zeros(3) // padding to 4 bytes
+  { signature: b"\x38\x42\x49\x4D", key: b"lmgm", data: w.to_bytes() }
+}
+
+///|
+/// Create Vector Mask as Global Mask ALI block (key 'vmgm').
+pub fn AdditionalLayerInfo::from_vector_mask_as_global(
+  flag : Bool,
+) -> AdditionalLayerInfo {
+  let w = @binary.Writer::new()
+  w.write_u8(if flag { b'\x01' } else { b'\x00' })
+  w.write_zeros(3) // padding to 4 bytes
+  { signature: b"\x38\x42\x49\x4D", key: b"vmgm", data: w.to_bytes() }
 }

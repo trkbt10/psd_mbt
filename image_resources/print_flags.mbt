@@ -1,5 +1,25 @@
+// Image Resources: Print Flags
+//
+// PSD File Format Specification, "Image Resources" section.
+
 ///|
-/// PrintFlags (ID 1011) - 9 bytes of boolean flags.
+/// Print Flags (ID 1011).
+///
+/// Spec: "0x03F3 (Photoshop 2.0)"
+///   "Print flags. A series of one-byte boolean values (see Page Setup dialog):
+///    labels, crop marks, color bars, registration marks, negative, flip,
+///    interpolate, caption, print flags."
+///   | Offset | Description          |
+///   |--------|----------------------|
+///   | 0      | Labels               |
+///   | 1      | Crop marks           |
+///   | 2      | Color bars           |
+///   | 3      | Registration marks   |
+///   | 4      | Negative             |
+///   | 5      | Flip                 |
+///   | 6      | Interpolate          |
+///   | 7      | Caption              |
+///   | 8      | Print flags          |
 pub(all) struct PrintFlags {
   labels : Bool
   crop_marks : Bool
@@ -13,7 +33,6 @@ pub(all) struct PrintFlags {
 } derive(Eq, Show)
 
 ///|
-/// Parse PrintFlags from an ImageResourceBlock (ID 1011).
 pub fn ImageResourceBlock::as_print_flags(
   self : ImageResourceBlock,
 ) -> PrintFlags? {
@@ -34,7 +53,6 @@ pub fn ImageResourceBlock::as_print_flags(
 }
 
 ///|
-/// Create a PrintFlags resource block.
 pub fn ImageResourceBlock::from_print_flags(
   flags : PrintFlags,
 ) -> ImageResourceBlock {
@@ -61,7 +79,18 @@ pub fn ImageResourceBlock::from_print_flags(
 }
 
 ///|
-/// PrintFlagsInfo (ID 10000) - version(2) + centerCrop(1) + pad(1) + bleedWidth(4) + bleedScale(2)
+/// Print Flags Information (ID 10000).
+///
+/// Spec: "0x2710"
+///   "Print flags information. 2 bytes version (= 1), 1 byte center crop marks,
+///    1 byte (= 0), 4 bytes bleed width value, 2 bytes bleed width scale."
+///   | Length | Description         |
+///   |--------|---------------------|
+///   | 2      | Version (= 1)      |
+///   | 1      | Center crop marks   |
+///   | 1      | Padding (= 0)      |
+///   | 4      | Bleed width value   |
+///   | 2      | Bleed width scale   |
 pub(all) struct PrintFlagsInfo {
   version : Int
   center_crop : Bool
@@ -70,7 +99,6 @@ pub(all) struct PrintFlagsInfo {
 } derive(Eq, Show)
 
 ///|
-/// Parse PrintFlagsInfo from an ImageResourceBlock (ID 10000).
 pub fn ImageResourceBlock::as_print_flags_info(
   self : ImageResourceBlock,
 ) -> PrintFlagsInfo? {
@@ -91,7 +119,6 @@ pub fn ImageResourceBlock::as_print_flags_info(
 }
 
 ///|
-/// Create a PrintFlagsInfo resource block.
 pub fn ImageResourceBlock::from_print_flags_info(
   info : PrintFlagsInfo,
 ) -> ImageResourceBlock {
