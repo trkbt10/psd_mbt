@@ -29,10 +29,15 @@ fn is_psb_extended_key(key : Bytes) -> Bool {
   key == b"PxSD"
 }
 
+///| PSD spec: "Additional layer information. See Additional layer
+///| information for the signatures and keys for each type."
 ///|
+///| `padding_align`: 2 for ALI inside layer records, 4 for global ALI at the
+///| end of the Layer and Mask Information section.
 pub fn AdditionalLayerInfo::parse(
   reader : @binary.Reader,
   version : @types.PsdVersion,
+  padding_align? : Int = 2,
 ) -> AdditionalLayerInfo raise @types.PsdError {
   let signature = reader.read_bytes(4)
   if signature != ali_signature_8bim && signature != ali_signature_8b64 {
@@ -50,9 +55,10 @@ pub fn AdditionalLayerInfo::parse(
     Psd => reader.read_u32_be().reinterpret_as_int()
   }
   let data = if data_length > 0 { reader.read_bytes(data_length) } else { b"" }
-  // Skip padding if data length is odd (round to even)
-  if data_length % 2 != 0 {
-    reader.skip(1)
+  // Pad data to alignment boundary
+  let remainder = data_length % padding_align
+  if remainder != 0 {
+    reader.skip(padding_align - remainder)
   }
   { signature, key, data }
 }
@@ -62,6 +68,7 @@ pub fn AdditionalLayerInfo::build(
   self : AdditionalLayerInfo,
   writer : @binary.Writer,
   version : @types.PsdVersion,
+  padding_align? : Int = 2,
 ) -> Unit {
   writer.write_bytes(self.signature)
   writer.write_bytes(self.key)
@@ -79,18 +86,23 @@ pub fn AdditionalLayerInfo::build(
   if data_length > 0 {
     writer.write_bytes(self.data)
   }
-  // Padding if data length is odd
-  if data_length % 2 != 0 {
-    writer.write_u8(b'\x00')
+  // Pad data to alignment boundary
+  let remainder = data_length % padding_align
+  if remainder != 0 {
+    for _i = 0; _i < padding_align - remainder; _i = _i + 1 {
+      writer.write_u8(b'\x00')
+    }
   }
 }
 
+///| Parse multiple AdditionalLayerInfo blocks from remaining bytes.
 ///|
-/// Parse multiple AdditionalLayerInfo blocks from remaining bytes.
+///| `padding_align`: 2 for ALI inside layer records, 4 for global ALI.
 pub fn parse_additional_layer_infos(
   reader : @binary.Reader,
   byte_count : Int,
   version : @types.PsdVersion,
+  padding_align? : Int = 2,
 ) -> Array[AdditionalLayerInfo] raise @types.PsdError {
   let result : Array[AdditionalLayerInfo] = []
   if byte_count <= 0 {
@@ -107,7 +119,7 @@ pub fn parse_additional_layer_infos(
       }
       break
     }
-    result.push(AdditionalLayerInfo::parse(reader, version))
+    result.push(AdditionalLayerInfo::parse(reader, version, padding_align~))
   }
   result
 }
@@ -118,9 +130,10 @@ pub fn build_additional_layer_infos(
   infos : Array[AdditionalLayerInfo],
   writer : @binary.Writer,
   version : @types.PsdVersion,
+  padding_align? : Int = 2,
 ) -> Unit {
   for i = 0; i < infos.length(); i = i + 1 {
-    infos[i].build(writer, version)
+    infos[i].build(writer, version, padding_align~)
   }
 }
 

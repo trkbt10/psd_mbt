@@ -45,9 +45,13 @@ pub fn LayerAndMaskInfo::parse(
     None
   }
   // Additional Layer Information (remaining bytes)
+  // Global ALI blocks use 4-byte alignment (PSD spec)
   let remaining2 = section_length - (reader.position() - section_start)
   let additional_info = parse_additional_layer_infos(
-    reader, remaining2, version,
+    reader,
+    remaining2,
+    version,
+    padding_align=4,
   )
   { layer_info, global_mask, additional_info }
 }
@@ -87,8 +91,13 @@ pub fn LayerAndMaskInfo::build(
     Some(gm) => gm.build(temp)
     None => temp.write_u32_be(0U)
   }
-  // Additional layer info
-  build_additional_layer_infos(self.additional_info, temp, version)
+  // Additional layer info (global ALI uses 4-byte alignment)
+  build_additional_layer_infos(
+    self.additional_info,
+    temp,
+    version,
+    padding_align=4,
+  )
   // Write section length + content
   let section_data = temp.to_bytes()
   writer.write_length(section_data.length(), version)

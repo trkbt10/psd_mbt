@@ -8,11 +8,11 @@ import {
 }
 
 // Values
-pub fn build_additional_layer_infos(Array[AdditionalLayerInfo], @binary.Writer, @types.PsdVersion) -> Unit
+pub fn build_additional_layer_infos(Array[AdditionalLayerInfo], @binary.Writer, @types.PsdVersion, padding_align? : Int) -> Unit
 
 pub fn is_adjustment_key(Bytes) -> Bool
 
-pub fn parse_additional_layer_infos(@binary.Reader, Int, @types.PsdVersion) -> Array[AdditionalLayerInfo] raise @types.PsdError
+pub fn parse_additional_layer_infos(@binary.Reader, Int, @types.PsdVersion, padding_align? : Int) -> Array[AdditionalLayerInfo] raise @types.PsdError
 
 // Errors
 
@@ -54,7 +54,7 @@ pub fn AdditionalLayerInfo::as_vector_mask(Self) -> VectorMask?
 pub fn AdditionalLayerInfo::as_vector_origination(Self) -> (Int, @descriptor.Descriptor)?
 pub fn AdditionalLayerInfo::as_vector_stroke_content(Self) -> (Bytes, Int, @descriptor.Descriptor)?
 pub fn AdditionalLayerInfo::as_vector_stroke_data(Self) -> (Int, @descriptor.Descriptor)?
-pub fn AdditionalLayerInfo::build(Self, @binary.Writer, @types.PsdVersion) -> Unit
+pub fn AdditionalLayerInfo::build(Self, @binary.Writer, @types.PsdVersion, padding_align? : Int) -> Unit
 pub fn AdditionalLayerInfo::from_adjustment_descriptor(Bytes, Int, @descriptor.Descriptor) -> Self
 pub fn AdditionalLayerInfo::from_annotations(AnnotationsData) -> Self
 pub fn AdditionalLayerInfo::from_blend_clipping(Bool) -> Self
@@ -86,7 +86,7 @@ pub fn AdditionalLayerInfo::from_vector_mask_as_global(Bool) -> Self
 pub fn AdditionalLayerInfo::from_vector_origination(Int, @descriptor.Descriptor) -> Self
 pub fn AdditionalLayerInfo::from_vector_stroke_content(Bytes, Int, @descriptor.Descriptor) -> Self
 pub fn AdditionalLayerInfo::from_vector_stroke_data(Int, @descriptor.Descriptor) -> Self
-pub fn AdditionalLayerInfo::parse(@binary.Reader, @types.PsdVersion) -> Self raise @types.PsdError
+pub fn AdditionalLayerInfo::parse(@binary.Reader, @types.PsdVersion, padding_align? : Int) -> Self raise @types.PsdError
 pub impl Eq for AdditionalLayerInfo
 pub impl Show for AdditionalLayerInfo
 
