@@ -237,6 +237,40 @@ body {
   white-space: nowrap;
 }
 
+/* Visibility toggle button */
+.tree-visibility-btn {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  border-radius: 3px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.tree-node-row:hover .tree-visibility-btn,
+.tree-node-hidden .tree-visibility-btn {
+  opacity: 1;
+}
+
+.tree-visibility-btn:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+/* Dimmed appearance for hidden layers */
+.tree-node-hidden .tree-icon,
+.tree-node-hidden .tree-label {
+  opacity: 0.4;
+}
+
 /* Badge */
 .badge {
   display: inline-flex;
@@ -258,6 +292,11 @@ body {
   color: var(--text-muted);
   background: transparent;
   font-style: italic;
+}
+
+.badge-warning {
+  color: #e8a825;
+  background: rgba(232, 168, 37, 0.15);
 }
 
 /* Properties Panel */

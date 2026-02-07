@@ -7,6 +7,12 @@ export interface PsdWasmExports {
   get_composite_rgba: (handle: number) => string;
   get_layer_rgba: (handle: number, layerIndex: number) => string;
   get_layer_count: (handle: number) => number;
+  prepare_layer_rgba: (handle: number, layerIndex: number) => number;
+  prepare_composite_rgba: (handle: number) => number;
+  read_rgba_chunk: (offset: number, size: number) => string;
+  free_rgba_cache: () => void;
+  get_layer_channel_info: (handle: number, layerIndex: number) => string;
+  prepare_layer_channel_data: (handle: number, layerIndex: number, chIndex: number) => number;
 }
 
 let wasmExports: PsdWasmExports | null = null;

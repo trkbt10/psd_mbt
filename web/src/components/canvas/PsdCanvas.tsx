@@ -98,6 +98,7 @@ export function PsdCanvas() {
   const layerPixels = usePsdStore((s) => s.layerPixels);
   const layerInfos = usePsdStore((s) => s.layerInfos);
   const layersLoaded = usePsdStore((s) => s.layersLoaded);
+  const visibilityOverrides = usePsdStore((s) => s.visibilityOverrides);
   const zoom = useCanvasStore((s) => s.zoom);
   const panX = useCanvasStore((s) => s.panX);
   const panY = useCanvasStore((s) => s.panY);
@@ -140,16 +141,23 @@ export function PsdCanvas() {
     return () => observer.disconnect();
   }, []);
 
+  // Set document size and fit view as soon as IR is available
+  useEffect(() => {
+    const renderer = rendererRef.current;
+    if (!renderer || !ir) return;
+    renderer.setDocumentSize(ir.header.width, ir.header.height);
+    if (canvasRef.current) {
+      const rect = canvasRef.current.getBoundingClientRect();
+      fitToView(ir.header.width, ir.header.height, rect.width, rect.height);
+    }
+  }, [ir, fitToView]);
+
   // Load composite image
   useEffect(() => {
     const renderer = rendererRef.current;
     if (!renderer || !compositeRgba || !ir) return;
     renderer.setCompositeImage(compositeRgba, ir.header.width, ir.header.height);
-    if (canvasRef.current) {
-      const rect = canvasRef.current.getBoundingClientRect();
-      fitToView(ir.header.width, ir.header.height, rect.width, rect.height);
-    }
-  }, [compositeRgba, ir, fitToView]);
+  }, [compositeRgba, ir]);
 
   // Set overlay layers when IR changes
   useEffect(() => {
@@ -157,20 +165,31 @@ export function PsdCanvas() {
     rendererRef.current?.render();
   }, [layerBounds]);
 
-  // Load per-layer textures from WASM data (proper transparency)
+  // Upload per-layer textures when loaded (but keep composite display mode)
   useEffect(() => {
     const renderer = rendererRef.current;
     if (!renderer || !layersLoaded) return;
+    let uploaded = 0;
     for (const [layerIndex, data] of layerPixels) {
       if (data.width > 0 && data.height > 0) {
         renderer.setLayerImage(layerIndex, data);
+        uploaded++;
       }
     }
-    // Set layer infos so recomposite() can be called during drag
-    if (layerInfos.length > 0) {
-      renderer.setLayerInfos(layerInfos);
-    }
-  }, [layerPixels, layerInfos, layersLoaded]);
+    console.log(`[PsdCanvas] layersLoaded: textures=${uploaded}/${layerPixels.size}, infos=${layerInfos.length}`);
+    renderer.setLayerInfos(layerInfos);
+    renderer.render();
+  }, [layerPixels, layersLoaded]);
+
+  // Switch to FBO composite mode when visibility is toggled
+  useEffect(() => {
+    const renderer = rendererRef.current;
+    if (!renderer || !layersLoaded || visibilityOverrides.size === 0) return;
+    renderer.setLayerInfos(layerInfos);
+    renderer.recomposite();
+    renderer.setRenderMode("layers");
+    renderer.render();
+  }, [layerInfos, layersLoaded, visibilityOverrides]);
 
   // Sync overlay state to renderer and re-render
   useEffect(() => {
@@ -378,6 +397,7 @@ export function PsdCanvas() {
         renderer.setLayerOffset(drag.layerIndex, newDx, newDy);
         useCanvasStore.getState().setLayerOffset(drag.layerIndex, newDx, newDy);
         renderer.recomposite();
+        renderer.setRenderMode("layers");
         renderer.render();
       }
     };

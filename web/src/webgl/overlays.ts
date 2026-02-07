@@ -77,12 +77,12 @@ function renderHandles(
   view: ViewTransform,
   canvas: HTMLCanvasElement,
 ): void {
-  const dpr = window.devicePixelRatio || 1;
-  const cw = canvas.width;
-  const ch = canvas.height;
-  const aspect = cw / ch;
-  const scaleX = view.zoom * (docWidth / Math.max(docWidth, docHeight * aspect));
-  const handleDocSize = 4 * dpr / (scaleX * cw / (2 * docWidth));
+  const rect = canvas.getBoundingClientRect();
+  const cssW = rect.width;
+  // scaleX: the NDC scale factor (zoom * docW / cssCanvasW)
+  const scaleX = view.zoom * docWidth / cssW;
+  // Convert 4 CSS pixels to document-space size for handles
+  const handleDocSize = 4 / (scaleX * cssW / (2 * docWidth));
 
   const corners = [
     [l, t], [r, t], [r, b], [l, b],

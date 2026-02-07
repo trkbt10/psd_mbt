@@ -3,6 +3,11 @@
 let documents : Array[@psd_fmt.PsdFile?] = []
 
 ///|
+/// Cached LayerInfo extracted from Lr16/Lr32/Layr global ALI blocks.
+/// Populated lazily on first access for 16/32-bit PSD files.
+let lr16_cache : Array[@layer_and_mask.LayerInfo?] = []
+
+///|
 /// Last error message for cross-boundary error reporting.
 let last_error : Ref[String] = { val: "" }
 
@@ -17,6 +22,7 @@ pub fn parse_psd(data_str : String) -> Int {
     let psd = @psd_fmt.PsdFile::parse(data)
     let handle = documents.length()
     documents.push(Some(psd))
+    lr16_cache.push(None)
     handle
   } catch {
     e => {
@@ -36,7 +42,7 @@ pub fn get_document_ir(handle : Int) -> String {
     return ""
   }
   match documents[handle] {
-    Some(psd) => serialize_psd_to_json(psd)
+    Some(psd) => serialize_psd_to_json(handle, psd)
     None => {
       last_error.val = "Document has been freed"
       ""
@@ -67,6 +73,7 @@ pub fn rebuild_psd(handle : Int) -> String {
 pub fn free_document(handle : Int) -> Unit {
   if handle >= 0 && handle < documents.length() {
     documents[handle] = None
+    lr16_cache[handle] = None
   }
 }
 

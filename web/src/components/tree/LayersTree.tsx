@@ -1,5 +1,6 @@
 import type { LayerTreeNode } from "../../wasm/types";
 import { useUIStore, isExpanded } from "../../store/ui-store";
+import { usePsdStore } from "../../store/psd-store";
 import { TreeNode } from "./TreeNode";
 
 interface LayersTreeProps {
@@ -33,6 +34,7 @@ function LayerNodeComponent({
   path: number[];
 }) {
   const { selection, expandedPaths, select, toggleExpand } = useUIStore();
+  const { visibilityOverrides, toggleLayerVisibility, failedLayers, layersLoaded } = usePsdStore();
   const pathKey = `layer-${path.join(".")}`;
 
   const isNodeSelected =
@@ -42,6 +44,9 @@ function LayerNodeComponent({
 
   if (node.type === "group") {
     const expanded = isExpanded(expandedPaths, pathKey);
+    const effectiveVisible = visibilityOverrides.has(node.layerIndex)
+      ? visibilityOverrides.get(node.layerIndex)!
+      : node.visible;
     return (
       <TreeNode
         label={node.name}
@@ -49,6 +54,7 @@ function LayerNodeComponent({
         depth={depth}
         isExpanded={expanded}
         isSelected={isNodeSelected}
+        isVisible={effectiveVisible}
         hasChildren={node.children.length > 0}
         badges={[
           ...(node.blendMode !== "passThrough"
@@ -57,10 +63,16 @@ function LayerNodeComponent({
           ...(node.opacity < 255
             ? [{ text: `${Math.round((node.opacity / 255) * 100)}%` }]
             : []),
-          ...(!node.visible ? [{ text: "hidden", variant: "muted" }] : []),
+          ...(layersLoaded && failedLayers.has(node.layerIndex)
+            ? [{ text: "no pixels", variant: "warning" }]
+            : []),
         ]}
-        onSelect={() => select({ section: "layers", path })}
+        onSelect={() => {
+          select({ section: "layers", path });
+          toggleExpand(pathKey);
+        }}
         onToggle={() => toggleExpand(pathKey)}
+        onToggleVisibility={() => toggleLayerVisibility(node.layerIndex)}
       >
         <LayersTree nodes={node.children} depth={depth + 1} pathPrefix={path} />
       </TreeNode>
@@ -68,12 +80,16 @@ function LayerNodeComponent({
   }
 
   if (node.type === "layer") {
+    const effectiveVisible = visibilityOverrides.has(node.layerIndex)
+      ? visibilityOverrides.get(node.layerIndex)!
+      : node.visible;
     return (
       <TreeNode
         label={node.name}
         icon={<LayerIcon kind={node.layerKind} />}
         depth={depth}
         isSelected={isNodeSelected}
+        isVisible={effectiveVisible}
         badges={[
           ...(node.blendMode !== "normal"
             ? [{ text: node.blendMode }]
@@ -81,9 +97,12 @@ function LayerNodeComponent({
           ...(node.opacity < 255
             ? [{ text: `${Math.round((node.opacity / 255) * 100)}%` }]
             : []),
-          ...(!node.visible ? [{ text: "hidden", variant: "muted" }] : []),
+          ...(layersLoaded && failedLayers.has(node.layerIndex)
+            ? [{ text: "no pixels", variant: "warning" }]
+            : []),
         ]}
         onSelect={() => select({ section: "layers", path })}
+        onToggleVisibility={() => toggleLayerVisibility(node.layerIndex)}
       />
     );
   }

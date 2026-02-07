@@ -51,6 +51,7 @@ export class WebGLRenderer {
       alpha: false,
       premultipliedAlpha: false,
       antialias: false,
+      preserveDrawingBuffer: true,
     });
     if (!gl) throw new Error("WebGL2 not supported");
     this.gl = gl;
@@ -118,6 +119,13 @@ export class WebGLRenderer {
     return vao;
   }
 
+  // --- Document size ---
+
+  setDocumentSize(width: number, height: number): void {
+    this.docWidth = width;
+    this.docHeight = height;
+  }
+
   // --- Texture management ---
 
   setCompositeImage(rgba: Uint8Array, width: number, height: number): void {
@@ -180,17 +188,22 @@ export class WebGLRenderer {
   }
 
   recomposite(): void {
-    if (this.layerInfos.length === 0 || this.layerTextures.size === 0) return;
+    if (this.layerInfos.length === 0 || this.layerTextures.size === 0) {
+      console.warn(`[renderer] recomposite skipped: infos=${this.layerInfos.length}, textures=${this.layerTextures.size}`);
+      return;
+    }
     // layerInfos is in tree order (top-to-bottom visual).
     // Compositing needs bottom-to-top, so reverse.
     const bottomToTop = [...this.layerInfos].reverse();
+    const visibleWithTex = bottomToTop.filter(l => l.visible && this.layerTextures.has(l.layerIndex));
+    console.log(`[renderer] recomposite: ${bottomToTop.length} layers, ${visibleWithTex.length} visible+textured, doc=${this.docWidth}x${this.docHeight}`);
     compositeAllLayers(
       this.gl, this.compositorState, bottomToTop,
       this.layerTextures, this.layerOffsets,
       this.docWidth, this.docHeight,
       this.blitProgram, this.quadVAO,
     );
-    this.renderMode = "layers";
+    // Don't auto-switch renderMode here; let caller decide.
   }
 
   // --- Overlay state ---
@@ -226,11 +239,11 @@ export class WebGLRenderer {
   // --- Coordinate conversion ---
 
   screenToDocument(screenX: number, screenY: number): { docX: number; docY: number } {
-    const dpr = window.devicePixelRatio || 1;
+    const rect = this.canvas.getBoundingClientRect();
     return screenToDocument(
-      this.canvas.width, this.canvas.height,
+      rect.width, rect.height,
       this.view, this.docWidth, this.docHeight,
-      screenX, screenY, dpr,
+      screenX, screenY,
     );
   }
 
@@ -264,7 +277,9 @@ export class WebGLRenderer {
     gl.useProgram(this.blitProgram);
     gl.bindVertexArray(this.quadVAO);
 
-    const viewMatrix = computeViewMatrix(cw, ch, this.view, this.docWidth, this.docHeight);
+    // Use CSS pixel dimensions for view matrix (zoom/pan are in CSS pixel space)
+    const rect = this.canvas.getBoundingClientRect();
+    const viewMatrix = computeViewMatrix(rect.width, rect.height, this.view, this.docWidth, this.docHeight);
 
     // FBO composites are Y-flipped relative to uploaded textures
     const modelMatrix = new Float32Array([

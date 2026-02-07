@@ -17,6 +17,10 @@ function getWorker(): Worker {
     });
     worker.onmessage = (e) => {
       const { id, type, payload } = e.data;
+      if (type === "progress") {
+        console.log(payload);
+        return;
+      }
       const p = pending.get(id);
       if (!p) return;
       pending.delete(id);

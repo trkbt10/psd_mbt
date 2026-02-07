@@ -1,6 +1,6 @@
 ///|
 /// Serialize a PsdFile to JSON IR string.
-fn serialize_psd_to_json(psd : @psd_fmt.PsdFile) -> String {
+fn serialize_psd_to_json(handle : Int, psd : @psd_fmt.PsdFile) -> String {
   let j = JsonBuf::new()
   j.object_start()
   // Header
@@ -20,7 +20,7 @@ fn serialize_psd_to_json(psd : @psd_fmt.PsdFile) -> String {
   // Layer tree
   j.comma()
   j.key("layerTree")
-  serialize_layer_tree(j, psd.layer_and_mask_info)
+  serialize_layer_tree(j, handle, psd)
   // Global mask
   j.comma()
   j.key("globalMask")
@@ -97,15 +97,46 @@ fn serialize_image_resources(
 ///|
 fn serialize_layer_tree(
   j : JsonBuf,
-  lm : @layer_and_mask.LayerAndMaskInfo,
+  handle : Int,
+  psd : @psd_fmt.PsdFile,
 ) -> Unit {
-  match lm.layer_info {
+  match resolve_layer_info(handle, psd) {
     Some(li) => {
       let tree = build_layer_tree(li.layers)
       serialize_tree_node(j, tree)
     }
     None => j.null()
   }
+}
+
+///|
+/// Try to extract LayerInfo from Lr16/Lr32/Layr global ALI blocks.
+/// Accepts the PSD version so PSB files are parsed correctly.
+fn extract_layer_info_from_ali(
+  infos : Array[@layer_and_mask.AdditionalLayerInfo],
+  version : @types.PsdVersion,
+) -> @layer_and_mask.LayerInfo? {
+  for i = 0; i < infos.length(); i = i + 1 {
+    let key = infos[i].key
+    if key == b"Lr16" || key == b"Lr32" || key == b"Layr" {
+      let data = infos[i].data
+      if data.length() < 2 {
+        continue
+      }
+      let reader = @binary.Reader::new(data)
+      // Lr16/Lr32/Layr data has the same format as LayerInfo:
+      // layer_count (Int16) + layer records + channel image data
+      let li = try {
+        @layer_and_mask.LayerInfo::parse(reader, version)
+      } catch {
+        _ => continue
+      }
+      if li.layers.length() > 0 {
+        return Some(li)
+      }
+    }
+  }
+  None
 }
 
 ///|

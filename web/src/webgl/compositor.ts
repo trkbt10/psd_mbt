@@ -68,7 +68,13 @@ export function compositeAllLayers(
   gl.uniform1i(uTex, 0);
 
   gl.enable(gl.BLEND);
-  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+  // Use separate blend for correct alpha accumulation:
+  // Color: src.rgb * src.a + dst.rgb * (1 - src.a)
+  // Alpha: src.a * 1 + dst.a * (1 - src.a)  [source-over]
+  gl.blendFuncSeparate(
+    gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA,
+    gl.ONE, gl.ONE_MINUS_SRC_ALPHA,
+  );
 
   for (const layer of layers) {
     if (!layer.visible) continue;
@@ -102,6 +108,8 @@ export function compositeAllLayers(
 
   state.compositedTexture = state.fbo.tex;
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  // Restore default blend state
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
   return state.compositedTexture;
 }
