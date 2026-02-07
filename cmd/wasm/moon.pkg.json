@@ -1,0 +1,45 @@
+{
+  "is-main": true,
+  "import": [
+    {
+      "path": "username/psd_fmt",
+      "alias": "psd_fmt"
+    },
+    {
+      "path": "username/psd_fmt/types",
+      "alias": "types"
+    },
+    {
+      "path": "username/psd_fmt/header",
+      "alias": "header"
+    },
+    {
+      "path": "username/psd_fmt/color_mode_data",
+      "alias": "color_mode_data"
+    },
+    {
+      "path": "username/psd_fmt/layer_and_mask",
+      "alias": "layer_and_mask"
+    },
+    {
+      "path": "username/psd_fmt/image_resources",
+      "alias": "image_resources"
+    },
+    "moonbitlang/core/buffer"
+  ],
+  "link": {
+    "wasm-gc": {
+      "exports": [
+        "parse_psd",
+        "get_document_ir",
+        "rebuild_psd",
+        "free_document",
+        "get_last_error",
+        "get_composite_rgba",
+        "get_layer_rgba",
+        "get_layer_count"
+      ],
+      "use-js-builtin-string": true
+    }
+  }
+}

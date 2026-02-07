@@ -1,0 +1,39 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "username/psd_fmt/cmd/wasm"
+
+// Values
+pub fn free_document(Int) -> Unit
+
+pub fn get_composite_rgba(Int) -> String
+
+pub fn get_document_ir(Int) -> String
+
+pub fn get_last_error() -> String
+
+pub fn get_layer_count(Int) -> Int
+
+pub fn get_layer_rgba(Int, Int) -> String
+
+pub fn parse_psd(String) -> Int
+
+pub fn rebuild_psd(Int) -> String
+
+// Errors
+
+// Types and methods
+type AliSummary
+
+type GroupNodeInfo
+
+type JsonBuf
+
+type LayerNodeInfo
+
+type LayerProperties
+
+type LayerTreeNode
+
+// Type aliases
+
+// Traits
+
