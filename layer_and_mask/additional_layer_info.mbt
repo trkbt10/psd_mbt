@@ -30,10 +30,15 @@ fn is_psb_extended_key(key : Bytes) -> Bool {
 }
 
 ///| PSD spec: "Additional layer information. See Additional layer
+
 ///| information for the signatures and keys for each type."
+
 ///|
+
 ///| `padding_align`: 2 for ALI inside layer records, 4 for global ALI at the
-///| end of the Layer and Mask Information section.
+
+///|
+/// end of the Layer and Mask Information section.
 pub fn AdditionalLayerInfo::parse(
   reader : @binary.Reader,
   version : @types.PsdVersion,
@@ -96,8 +101,11 @@ pub fn AdditionalLayerInfo::build(
 }
 
 ///| Parse multiple AdditionalLayerInfo blocks from remaining bytes.
+
 ///|
-///| `padding_align`: 2 for ALI inside layer records, 4 for global ALI.
+
+///|
+/// `padding_align`: 2 for ALI inside layer records, 4 for global ALI.
 pub fn parse_additional_layer_infos(
   reader : @binary.Reader,
   byte_count : Int,
