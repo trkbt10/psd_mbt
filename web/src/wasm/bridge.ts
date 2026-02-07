@@ -1,4 +1,5 @@
 import type { PsdIR } from "./types";
+import type { LayerPixelData } from "../webgl/types";
 
 type PendingResolve = {
   resolve: (value: unknown) => void;
@@ -52,5 +53,44 @@ export function rebuildPsd(handle: number): Promise<Uint8Array> {
       reject,
     });
     getWorker().postMessage({ id, type: "rebuild", payload: handle });
+  });
+}
+
+export function getCompositeRgba(handle: number): Promise<Uint8Array> {
+  return new Promise((resolve, reject) => {
+    const id = ++messageId;
+    pending.set(id, {
+      resolve: (buf) => resolve(new Uint8Array(buf as ArrayBuffer)),
+      reject,
+    });
+    getWorker().postMessage({ id, type: "get-composite-rgba", payload: handle });
+  });
+}
+
+export function getLayerRgba(
+  handle: number,
+  layerIndex: number,
+  bounds: { left: number; top: number; right: number; bottom: number },
+): Promise<LayerPixelData> {
+  return new Promise((resolve, reject) => {
+    const w = bounds.right - bounds.left;
+    const h = bounds.bottom - bounds.top;
+    const id = ++messageId;
+    pending.set(id, {
+      resolve: (buf: unknown) => {
+        const rgba = new Uint8Array(buf as ArrayBuffer);
+        if (rgba.byteLength === 0 || w <= 0 || h <= 0) {
+          resolve({ rgba: new Uint8Array(0), width: 0, height: 0, offsetX: 0, offsetY: 0 });
+          return;
+        }
+        resolve({ rgba, width: w, height: h, offsetX: bounds.left, offsetY: bounds.top });
+      },
+      reject,
+    });
+    getWorker().postMessage({
+      id,
+      type: "get-layer-rgba",
+      payload: { handle, layerIndex },
+    });
   });
 }

@@ -4,18 +4,9 @@ export interface PsdWasmExports {
   rebuild_psd: (handle: number) => string;
   free_document: (handle: number) => void;
   get_last_error: () => string;
-  // Diagnostic functions
-  debug_bytes: (data: string, count: number) => string;
-  test_byte_at: (data: string, index: number) => number;
-  test_bytes_len: (data: string) => number;
-  test_sig_bytes: (data: string) => number;
-  test_sig_match: (data: string) => number;
-  test_reader_bytes: (data: string) => number;
-  test_parse_header: (data: string) => number;
-  test_parse_steps: (data: string) => number;
-  get_diag_pos: () => number;
-  test_bytes_at_offset: (data: string, offset: number) => number;
-  test_layer_substeps: (data: string) => number;
+  get_composite_rgba: (handle: number) => string;
+  get_layer_rgba: (handle: number, layerIndex: number) => string;
+  get_layer_count: (handle: number) => number;
 }
 
 let wasmExports: PsdWasmExports | null = null;
