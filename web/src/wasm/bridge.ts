@@ -87,6 +87,13 @@ export function getLayerRgba(
           resolve({ rgba: new Uint8Array(0), width: 0, height: 0, offsetX: 0, offsetY: 0 });
           return;
         }
+        const expected = w * h * 4;
+        if (rgba.byteLength !== expected) {
+          reject(new Error(
+            `Layer[${layerIndex}] RGBA size mismatch: got ${rgba.byteLength}, expected ${expected} (${w}x${h}x4)`,
+          ));
+          return;
+        }
         resolve({ rgba, width: w, height: h, offsetX: bounds.left, offsetY: bounds.top });
       },
       reject,

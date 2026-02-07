@@ -171,25 +171,22 @@ export function PsdCanvas() {
     if (!renderer || !layersLoaded) return;
     let uploaded = 0;
     for (const [layerIndex, data] of layerPixels) {
-      if (data.width > 0 && data.height > 0) {
+      if (data.width > 0 && data.height > 0 && !renderer.hasLayerTexture(layerIndex)) {
         renderer.setLayerImage(layerIndex, data);
         uploaded++;
       }
     }
-    console.log(`[PsdCanvas] layersLoaded: textures=${uploaded}/${layerPixels.size}, infos=${layerInfos.length}`);
+    if (uploaded > 0) {
+      console.log(`[PsdCanvas] uploaded ${uploaded} new textures (total=${layerPixels.size})`);
+    }
     renderer.setLayerInfos(layerInfos);
+    // If visibility has been toggled, recomposite with updated textures
+    if (visibilityOverrides.size > 0) {
+      renderer.recomposite();
+      renderer.setRenderMode("layers");
+    }
     renderer.render();
-  }, [layerPixels, layersLoaded]);
-
-  // Switch to FBO composite mode when visibility is toggled
-  useEffect(() => {
-    const renderer = rendererRef.current;
-    if (!renderer || !layersLoaded || visibilityOverrides.size === 0) return;
-    renderer.setLayerInfos(layerInfos);
-    renderer.recomposite();
-    renderer.setRenderMode("layers");
-    renderer.render();
-  }, [layerInfos, layersLoaded, visibilityOverrides]);
+  }, [layerPixels, layersLoaded, layerInfos, visibilityOverrides]);
 
   // Sync overlay state to renderer and re-render
   useEffect(() => {

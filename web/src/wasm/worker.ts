@@ -240,20 +240,35 @@ async function buildLayerRgbaJS(
     else if (ch.id === -1) comp = 3; // Alpha
     else continue; // Skip user mask, etc.
 
+    const chLabel = `layer[${layerIndex}] ch[${ch.id}] (${ch.compression}, ${ch.dataSize}B)`;
+    let decompressed: Uint8Array;
     const t0 = performance.now();
-    const decompressed = await decompressChannel(
-      wasm,
-      handle,
-      layerIndex,
-      chIdx,
-      ch,
-      info,
-    );
+    try {
+      decompressed = await decompressChannel(
+        wasm,
+        handle,
+        layerIndex,
+        chIdx,
+        ch,
+        info,
+      );
+    } catch (err) {
+      throw new Error(`${chLabel} decompression failed: ${err}`);
+    }
     const elapsed = (performance.now() - t0).toFixed(0);
+
+    const expectedSize = pixelCount * sampleBytes;
+    if (decompressed.length !== expectedSize && decompressed.length > 0) {
+      self.postMessage({
+        id: 0,
+        type: "progress",
+        payload: `[worker] ${chLabel}: size mismatch ${decompressed.length} vs expected ${expectedSize}`,
+      });
+    }
     self.postMessage({
       id: 0,
       type: "progress",
-      payload: `[worker] layer[${layerIndex}] ch[${ch.id}] ${ch.compression}: ${decompressed.length} bytes, ${elapsed}ms`,
+      payload: `[worker] ${chLabel}: ${decompressed.length} bytes, ${elapsed}ms`,
     });
 
     // Fill RGBA component from decompressed channel data

@@ -207,6 +207,38 @@ export const usePsdStore = create<PsdState>((set, get) => ({
 
     const infos = extractLayerInfos(ir.layerTree, overrides);
     set({ visibilityOverrides: overrides, layerInfos: infos });
+
+    // Load pixel data for newly-visible layers that don't have any
+    if (!newVisible) return;
+    const { handle, layerPixels, failedLayers } = get();
+    if (handle < 0) return;
+
+    const toLoad = infos.filter(
+      (i) =>
+        i.visible &&
+        !layerPixels.has(i.layerIndex) &&
+        !failedLayers.has(i.layerIndex) &&
+        i.rect.right - i.rect.left > 0 &&
+        i.rect.bottom - i.rect.top > 0,
+    );
+    if (toLoad.length === 0) return;
+
+    console.log(`[store] loading ${toLoad.length} newly-visible layers`);
+    (async () => {
+      const pixels = new Map(get().layerPixels);
+      const failed = new Set(get().failedLayers);
+      for (const info of toLoad) {
+        try {
+          const data = await getLayerRgba(handle, info.layerIndex, info.rect);
+          console.log(`[store] layer[${info.layerIndex}] rgba: ${data.width}x${data.height}`);
+          pixels.set(info.layerIndex, data);
+        } catch (err) {
+          console.warn(`[store] layer[${info.layerIndex}] FAILED:`, err);
+          failed.add(info.layerIndex);
+        }
+      }
+      set({ layerPixels: new Map(pixels), failedLayers: new Set(failed) });
+    })();
   },
 
   clear: () =>
