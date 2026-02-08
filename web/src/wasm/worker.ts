@@ -41,7 +41,7 @@ function readCachedChunked(
 /** Decompress zlib data using the browser's native DecompressionStream. */
 async function zlibDecompress(data: Uint8Array): Promise<Uint8Array> {
   const ds = new DecompressionStream("deflate");
-  const blob = new Blob([data]);
+  const blob = new Blob([data as BlobPart]);
   const stream = blob.stream().pipeThrough(ds);
   return new Uint8Array(await new Response(stream).arrayBuffer());
 }

@@ -23,7 +23,7 @@ export async function initWasm(): Promise<PsdWasmExports> {
   if (!initPromise) {
     initPromise = (async () => {
       const result = await WebAssembly.instantiateStreaming(
-        fetch("/wasm/psd_fmt.wasm"),
+        fetch(import.meta.env.BASE_URL + "wasm/psd_fmt.wasm"),
         {},
         // @ts-expect-error wasm-gc builtins not yet in TypeScript types
         { builtins: ["js-string"], importedStringConstants: "_" },
