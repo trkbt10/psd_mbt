@@ -8,6 +8,10 @@ declare global {
     __testReady: Promise<void>;
     __renderer: WebGLRenderer;
     __handle: number;
+    __ir: unknown;
+    __infos: LayerRenderInfo[];
+    __layerErrors: string[];
+    __compositeError: string | null;
     __recomposite: () => void;
     __moveLayer: (layerIndex: number, dx: number, dy: number) => void;
     __readPixels: () => Uint8Array;
@@ -42,27 +46,53 @@ async function init() {
   const canvas = document.getElementById("canvas") as HTMLCanvasElement;
   const renderer = new WebGLRenderer(canvas);
   window.__renderer = renderer;
+  window.__layerErrors = [];
+  window.__compositeError = null;
 
-  // Fetch and parse test PSD
-  const resp = await fetch("/tests/fixtures/test-layers.psd");
+  // Fetch and parse 16-bit grouped test PSD
+  const resp = await fetch("/tests/fixtures/test-16bit-grouped.psd");
   const buf = await resp.arrayBuffer();
-  const file = new File([buf], "test-layers.psd");
+  const file = new File([buf], "test-16bit-grouped.psd");
 
   const { ir, handle } = await parsePsd(file);
   window.__handle = handle;
+  window.__ir = ir;
 
-  // Get composite RGBA
-  const compositeRgba = await getCompositeRgba(handle);
-  renderer.setCompositeImage(compositeRgba, ir.header.width, ir.header.height);
+  console.log("Header:", ir.header);
+  console.log("Layer tree:", JSON.stringify(ir.layerTree, null, 2));
+
+  // Set document size (may not have composite for 16-bit)
+  renderer.setDocumentSize(ir.header.width, ir.header.height);
+
+  // Try to get composite RGBA
+  try {
+    const compositeRgba = await getCompositeRgba(handle);
+    renderer.setCompositeImage(compositeRgba, ir.header.width, ir.header.height);
+    console.log("Composite loaded:", compositeRgba.byteLength, "bytes");
+  } catch (err) {
+    console.warn("Composite failed:", err);
+    window.__compositeError = String(err);
+  }
 
   // Load per-layer data
   const infos = extractLayerInfos(ir.layerTree);
+  window.__infos = infos;
   renderer.setLayerInfos(infos);
 
+  console.log("Extracted infos:", infos);
+
   for (const info of infos) {
-    const data = await getLayerRgba(handle, info.layerIndex, info.rect);
-    if (data.width > 0 && data.height > 0) {
-      renderer.setLayerImage(info.layerIndex, data);
+    try {
+      const data = await getLayerRgba(handle, info.layerIndex, info.rect);
+      console.log(`Layer ${info.layerIndex}: ${data.width}x${data.height}, rgba ${data.rgba.byteLength} bytes`);
+      if (data.width > 0 && data.height > 0) {
+        renderer.setLayerImage(info.layerIndex, data);
+      } else {
+        window.__layerErrors.push(`Layer ${info.layerIndex}: empty data`);
+      }
+    } catch (err) {
+      console.error(`Failed layer ${info.layerIndex}:`, err);
+      window.__layerErrors.push(`Layer ${info.layerIndex}: ${err}`);
     }
   }
 
@@ -93,7 +123,6 @@ async function init() {
     return pixels;
   };
 
-  // Raw pixel readers - bypass checker shader, read at document resolution
   window.__readRawCompositePixels = () => {
     const r = renderer as any;
     const gl: WebGL2RenderingContext = r.gl;
@@ -108,8 +137,6 @@ async function init() {
     gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, buf);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.deleteFramebuffer(fb);
-    // texImage2D stores first row at texel row 0 = framebuffer bottom,
-    // readPixels starts from framebuffer bottom → output already matches upload order.
     return { pixels: Array.from(buf), width: w, height: h };
   };
 
@@ -124,8 +151,6 @@ async function init() {
     const buf = new Uint8Array(w * h * 4);
     gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, buf);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    // FBO rendered top-of-doc at NDC +1 (framebuffer top), but readPixels
-    // starts from framebuffer bottom → need to flip to match PSD top-to-bottom order.
     const flipped = new Uint8Array(w * h * 4);
     const rowBytes = w * 4;
     for (let y = 0; y < h; y++) {

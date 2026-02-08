@@ -92,7 +92,8 @@ def main():
     for layer in LAYERS:
         x, y, w_l, h_l = layer["x"], layer["y"], layer["w"], layer["h"]
         r, g, b, a = layer["color"]
-        alpha = a / 255.0
+        # Effective alpha = pixel alpha * layer opacity
+        alpha = (a / 255.0) * (layer["opacity"] / 255.0)
         for py in range(y, min(y + h_l, H)):
             for px in range(x, min(x + w_l, W)):
                 dst = composite[py][px]

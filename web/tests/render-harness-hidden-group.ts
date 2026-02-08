@@ -8,14 +8,18 @@ declare global {
     __testReady: Promise<void>;
     __renderer: WebGLRenderer;
     __handle: number;
+    __ir: unknown;
+    __infos: LayerRenderInfo[];
+    __layerErrors: string[];
     __recomposite: () => void;
-    __moveLayer: (layerIndex: number, dx: number, dy: number) => void;
+    __toggleLayerVisibility: (layerIndex: number, visible: boolean) => void;
     __readPixels: () => Uint8Array;
     __readRawCompositePixels: () => { pixels: number[]; width: number; height: number };
     __readRawFboPixels: () => { pixels: number[]; width: number; height: number };
   }
 }
 
+/** Extract layer infos with parent group visibility propagation */
 function extractLayerInfos(node: LayerTreeNode | null): LayerRenderInfo[] {
   if (!node) return [];
   const result: LayerRenderInfo[] = [];
@@ -42,43 +46,54 @@ async function init() {
   const canvas = document.getElementById("canvas") as HTMLCanvasElement;
   const renderer = new WebGLRenderer(canvas);
   window.__renderer = renderer;
+  window.__layerErrors = [];
 
-  // Fetch and parse test PSD
-  const resp = await fetch("/tests/fixtures/test-layers.psd");
+  const resp = await fetch("/tests/fixtures/test-hidden-group.psd");
   const buf = await resp.arrayBuffer();
-  const file = new File([buf], "test-layers.psd");
+  const file = new File([buf], "test-hidden-group.psd");
 
   const { ir, handle } = await parsePsd(file);
   window.__handle = handle;
+  window.__ir = ir;
 
-  // Get composite RGBA
   const compositeRgba = await getCompositeRgba(handle);
   renderer.setCompositeImage(compositeRgba, ir.header.width, ir.header.height);
 
-  // Load per-layer data
   const infos = extractLayerInfos(ir.layerTree);
+  window.__infos = infos;
   renderer.setLayerInfos(infos);
 
+  console.log("Layer tree:", JSON.stringify(ir.layerTree, null, 2));
+  console.log("Extracted infos:", infos);
+
   for (const info of infos) {
-    const data = await getLayerRgba(handle, info.layerIndex, info.rect);
-    if (data.width > 0 && data.height > 0) {
-      renderer.setLayerImage(info.layerIndex, data);
+    try {
+      const data = await getLayerRgba(handle, info.layerIndex, info.rect);
+      console.log(`Layer ${info.layerIndex}: ${data.width}x${data.height}, visible=${info.visible}`);
+      if (data.width > 0 && data.height > 0) {
+        renderer.setLayerImage(info.layerIndex, data);
+      }
+    } catch (err) {
+      console.error(`Failed layer ${info.layerIndex}:`, err);
+      window.__layerErrors.push(`Layer ${info.layerIndex}: ${err}`);
     }
   }
 
-  // Set view to fill canvas with document
   renderer.setViewTransform(0, 0, 1);
   renderer.render();
 
-  // Expose test helpers
   window.__recomposite = () => {
     renderer.recomposite();
     renderer.setRenderMode("layers");
     renderer.render();
   };
 
-  window.__moveLayer = (layerIndex: number, dx: number, dy: number) => {
-    renderer.setLayerOffset(layerIndex, dx, dy);
+  window.__toggleLayerVisibility = (layerIndex: number, visible: boolean) => {
+    const updated = infos.map((i) =>
+      i.layerIndex === layerIndex ? { ...i, visible } : i,
+    );
+    window.__infos = updated;
+    renderer.setLayerInfos(updated);
     renderer.recomposite();
     renderer.setRenderMode("layers");
     renderer.render();
@@ -93,7 +108,6 @@ async function init() {
     return pixels;
   };
 
-  // Raw pixel readers - bypass checker shader, read at document resolution
   window.__readRawCompositePixels = () => {
     const r = renderer as any;
     const gl: WebGL2RenderingContext = r.gl;
@@ -108,8 +122,6 @@ async function init() {
     gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, buf);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.deleteFramebuffer(fb);
-    // texImage2D stores first row at texel row 0 = framebuffer bottom,
-    // readPixels starts from framebuffer bottom → output already matches upload order.
     return { pixels: Array.from(buf), width: w, height: h };
   };
 
@@ -124,8 +136,6 @@ async function init() {
     const buf = new Uint8Array(w * h * 4);
     gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, buf);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    // FBO rendered top-of-doc at NDC +1 (framebuffer top), but readPixels
-    // starts from framebuffer bottom → need to flip to match PSD top-to-bottom order.
     const flipped = new Uint8Array(w * h * 4);
     const rowBytes = w * 4;
     for (let y = 0; y < h; y++) {
@@ -135,5 +145,4 @@ async function init() {
   };
 }
 
-// Signal readiness
 window.__testReady = init();
